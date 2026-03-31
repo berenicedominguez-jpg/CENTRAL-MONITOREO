@@ -764,7 +764,7 @@ var now=new Date();
 var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={};
 var actividadesData=[],solicitudesData=[],conectividadData={};
 var frtFallbackMap={},frtFallbackGlobal=0;
-var zohoHistorial={},conectividadHistorial={};
+var zohoHistorial={},zohoHistorialTotal={},conectividadHistorial={};
 var zohoRetryTimer=null,currentPage='resumen';
 
 /* ── CACHÉ ZOHO (localStorage, TTL 24 horas) ──────────────────────────
@@ -926,24 +926,24 @@ function updateMesHeaders(meses){
 async function loadZohoHistorial(){
   var mesesDisp=[...new Set(recData.map(function(r){return r.mes;}).concat(robosData.map(function(r){return r.mes;})).concat(CUATRIMESTRES.reduce(function(a,c){return a.concat(c.meses);},[])))].filter(Boolean);
   await Promise.all(mesesDisp.map(async function(m){
-    // Si ya está en memoria, no hacer nada
     if(zohoHistorial[m]!==undefined) return;
-    // Intentar desde localStorage
     var cached = zohoCacheGet(m);
     if(cached && cached.avg !== undefined){
       zohoHistorial[m] = cached.avg;
+      if(cached.agentes) zohoHistorialTotal[m]=cached.agentes.reduce(function(s,a){return s+(a.tickets||0);},0);
       return;
     }
-    // Fetch solo si no hay caché válida
     try{
       var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(m)).then(function(r){return r.json();});
       if(json.error)return;
       var ag=json.data||[];
       var tMin=ag.reduce(function(s,a){return s+(parseFloat(a.totalMinutes)||0);},0);
       var tCnt=ag.reduce(function(s,a){return s+(parseFloat(a.count)||parseFloat(a.tickets)||0);},0);
+      var tTk=ag.reduce(function(s,a){return s+(parseFloat(a.tickets)||0);},0);
       if(tCnt>0){
         var avg=tMin/tCnt;
         zohoHistorial[m]=avg;
+        zohoHistorialTotal[m]=tTk;
         zohoCacheSet(m, avg, ag);
       }
     }catch(e){}
@@ -1254,8 +1254,8 @@ async function renderResumen(){
       // ── Detalle adicional por tipo de KPI ──
       var detalleHtml='';
       if(k.id==='tickets'){
-        // Total tickets del mes desde zohoHistorial
-        var totalTk=zohoAgentes.length?zohoAgentes.reduce(function(s,a){return s+a.tickets;},0):0;
+        // Buscar total de tickets del mes específico desde zohoHistorialTotal
+        var totalTk=zohoHistorialTotal[m]||0;
         if(totalTk>0) detalleHtml='<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)">'+totalTk+' tickets</span></div>';
       } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
         var kw=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
@@ -1441,38 +1441,39 @@ async function loadZohoAgentes(mes){
       if(cached && cached.agentes && cached.agentes.length){
         zohoAgentes=cached.agentes;
         if(cached.avg) zohoHistorial[mesKey]=cached.avg;
+        zohoHistorialTotal[mesKey]=zohoAgentes.reduce(function(s,a){return s+(a.tickets||0);},0);
       } else {
         var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
         if(json.error) throw new Error(json.error);
         zohoAgentes=json.data||[];
         var avg=zohoAvgFromAgentes(zohoAgentes);
         if(avg) zohoHistorial[mesKey]=avg;
+        zohoHistorialTotal[mesKey]=zohoAgentes.reduce(function(s,a){return s+(a.tickets||0);},0);
         zohoCacheSet(mesKey,avg||undefined,zohoAgentes);
       }
     } else if(!cached || !cached.agentes || !cached.agentes.length){
-      // Mes actual sin caché → fetch completo
       var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
       if(json.error) throw new Error(json.error);
       zohoAgentes=json.data||[];
       var avg=zohoAvgFromAgentes(zohoAgentes);
       if(avg) zohoHistorial[mesKey]=avg;
+      zohoHistorialTotal[mesKey]=zohoAgentes.reduce(function(s,a){return s+(a.tickets||0);},0);
       zohoCacheSet(mesKey,avg||undefined,zohoAgentes);
     } else {
-      // Mes actual con caché válida → fetch incremental con parámetro "desde"
       var desdeISO=new Date(cached.ts).toISOString();
       var url=API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)+'&desde='+encodeURIComponent(desdeISO);
       var jsonD=await fetch(url).then(function(r){return r.json();});
       if(!jsonD.error && jsonD.data && jsonD.data.length && jsonD.fuente==='incremental'){
-        // El backend ya hizo el merge y devuelve el resultado completo
         zohoAgentes=jsonD.data;
         var avg=zohoAvgFromAgentes(zohoAgentes);
         if(avg) zohoHistorial[mesKey]=avg;
+        zohoHistorialTotal[mesKey]=zohoAgentes.reduce(function(s,a){return s+(a.tickets||0);},0);
         zohoCacheSet(mesKey,avg||undefined,zohoAgentes);
       } else {
-        // Sin tickets nuevos o caché fresca → usar lo que ya tenemos
         zohoAgentes=cached.agentes;
         if(cached.avg) zohoHistorial[mesKey]=cached.avg;
-        zohoCacheSet(mesKey,cached.avg,cached.agentes); // renovar TTL
+        zohoHistorialTotal[mesKey]=zohoAgentes.reduce(function(s,a){return s+(a.tickets||0);},0);
+        zohoCacheSet(mesKey,cached.avg,cached.agentes);
       }
     }
     renderAgentesZoho();renderDesempeno(mes);

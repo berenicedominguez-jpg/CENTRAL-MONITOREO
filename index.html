@@ -1809,15 +1809,38 @@ function exportPDF(){
       var d=det[m];
       if(!d||d.val===null)return'<td style="text-align:center;padding:7px 6px;border-right:1px solid #f1f5f9"><span style="background:#f1f5f9;color:#94a3b8;font-size:6pt;padding:2px 7px;border-radius:99px">S/D</span></td>';
       var ok=d.cumple===true;var dispVal=k.tipo==='tiempo'?fmtMin(d.val):d.val.toFixed(1)+'%';
+
+      // Detalle adicional por tipo de KPI
+      var detalleHtml='';
+      if(k.id==='tickets'){
+        var totalTk=zohoAgentes.length?zohoAgentes.reduce(function(s,a){return s+a.tickets;},0):0;
+        if(totalTk>0) detalleHtml='<div style="margin-top:2px"><span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:#f1f5f9;color:#64748b">'+totalTk+' tickets</span></div>';
+      } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
+        var kw2=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
+        var rowsMesPdf=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw2);});
+        var recPdf=rowsMesPdf.reduce(function(s,r){return s+r.recup;},0);
+        var noRecPdf=rowsMesPdf.reduce(function(s,r){return s+r.noRec;},0);
+        var totalPdf=recPdf+noRecPdf;
+        if(totalPdf>0) detalleHtml='<div style="margin-top:2px">'
+          +'<span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:#dcfce7;color:#15803d;margin-right:2px">'+recPdf+' rec.</span>'
+          +'<span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:'+(noRecPdf>0?'#fee2e2':'#f1f5f9')+';color:'+(noRecPdf>0?'#b91c1c':'#64748b')+'">'+noRecPdf+' no rec.</span>'
+          +'</div><div style="font-size:5pt;color:#94a3b8;margin-top:1px">'+totalPdf+' casos</div>';
+      } else if(k.id==='capac'){
+        var srvMesPdf=srvData.filter(function(r){return r.mes===m;});
+        var totEncPdf=srvMesPdf.reduce(function(s,r){return s+r.total;},0);
+        if(totEncPdf>0) detalleHtml='<div style="margin-top:2px"><span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:#f1f5f9;color:#64748b">'+totEncPdf+' encuestas</span></div>';
+      }
+
       return'<td style="text-align:center;padding:7px 6px;border-right:1px solid #f1f5f9">'
         +'<div style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:8pt;font-weight:700;color:#0d2b4e;margin-bottom:3px"><span style="width:7px;height:7px;border-radius:50%;background:'+(ok?'#16a34a':'#ef4444')+';display:inline-block"></span>'+dispVal+'</div>'
         +'<span style="background:'+(ok?'#dcfce7':'#fee2e2')+';color:'+(ok?'#15803d':'#b91c1c')+';font-size:6pt;font-weight:700;padding:2px 7px;border-radius:99px">'+(ok?'✓ OK':'✗ Fuera de objetivo')+'</span>'
+        +detalleHtml
         +'</td>';
     }).join('');
     var estatusHtml=!mConDato.length?'<span style="font-size:7pt;color:#94a3b8;font-style:italic">Sin datos</span>'
       :'<div style="font-size:10pt;font-weight:800;color:#0d2b4e;margin-bottom:3px">'+pts.toFixed(2)+'% <span style="font-size:7pt;color:#94a3b8">/ '+pesoNum+'%</span></div>'
        +'<div style="background:#e8eef5;border-radius:99px;height:5px;overflow:hidden;width:90px;margin:0 auto 3px"><div style="height:100%;border-radius:99px;width:'+barW.toFixed(1)+'%;background:'+barColor+'"></div></div>'
-       +'<div style="font-size:6pt;color:#64748b">'+mCumplen.length+'/'+totalMeses+' meses</div>';
+       +'<div style="font-size:6pt;color:#64748b">'+mCumplen.length+'/'+totalMeses+' meses cumplidos</div>';
     kpiRowsHtml+='<tr style="background:'+(i%2===0?'#fff':'#f8fafc')+'">'
       +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle"><div style="display:flex;align-items:center;gap:8px"><span style="width:30px;height:30px;border-radius:8px;background:'+k.iconBg+';display:inline-flex;align-items:center;justify-content:center;font-size:14pt">'+k.icon+'</span><div><div style="font-size:7.5pt;font-weight:700;color:#0d2b4e">'+k.nombre+'</div><div style="font-size:6pt;color:#94a3b8;margin-top:1px">Meta: '+k.meta_label+'</div></div></div></td>'
       +'<td style="text-align:center;padding:10px 8px;border-bottom:1px solid #f1f5f9;font-size:9pt;font-weight:800;color:#0d2b4e;border-right:1px solid #f1f5f9">'+k.peso+'</td>'

@@ -265,6 +265,64 @@
   .fin-sparkline{display:flex;align-items:flex-end;gap:3px;height:40px;margin-top:8px}
   .fin-spark-bar{background:linear-gradient(180deg,#2563a8,#60a5fa);border-radius:2px 2px 0 0;flex:1;min-height:2px;opacity:.7}
   @media(max-width:1100px){.fin-kpi-grid{grid-template-columns:repeat(2,1fr)}.fin-body{grid-template-columns:1fr}}
+  /* ── REDISEÑO PÁGINAS ── */
+  .rd-section-head{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:99px;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;margin-top:4px}
+  .rd-sh-blue{background:#e6f1fb;color:#185fa5}
+  .rd-sh-green{background:#eaf3de;color:#3b6d11}
+  .rd-sh-amber{background:#faeeda;color:#854f0b}
+  .rd-sh-red{background:#fcebeb;color:#a32d2d}
+  .rd-kpi-grid{display:grid;gap:12px;margin-bottom:20px}
+  .rd-kpi-card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 8px rgba(13,43,78,.07);border-left:4px solid #cbd5e1}
+  .rd-kpi-card.bl{border-left-color:#185fa5}
+  .rd-kpi-card.gn{border-left-color:#0f6e56}
+  .rd-kpi-card.rd{border-left-color:#a32d2d}
+  .rd-kpi-card.am{border-left-color:#854f0b}
+  .rd-kpi-lbl{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+  .rd-kpi-val{font-size:1.6rem;font-weight:800;color:#0d2b4e;line-height:1;margin-bottom:3px}
+  .rd-kpi-val.bl{color:#185fa5}.rd-kpi-val.gn{color:#0f6e56}.rd-kpi-val.rd{color:#a32d2d}.rd-kpi-val.am{color:#854f0b}
+  .rd-kpi-meta{font-size:.68rem;color:#94a3b8;margin-bottom:8px}
+  .rd-pw{background:#e8eef5;border-radius:99px;height:5px;overflow:hidden;margin-bottom:6px}
+  .rd-pb{height:100%;border-radius:99px;transition:width 1.2s ease}
+  .rd-badge{display:inline-block;font-size:.6rem;font-weight:700;padding:2px 10px;border-radius:99px}
+  .rd-bok{background:#e1f5ee;color:#0f6e56}
+  .rd-bfail{background:#fcebeb;color:#a32d2d}
+  .rd-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+  .rd-stat-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 8px rgba(13,43,78,.07);text-align:center}
+  .rd-stat-num{font-size:1.8rem;font-weight:800;color:#0d2b4e;line-height:1;margin:.25rem 0}
+  .rd-stat-lbl{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8}
+  .rd-tbl{width:100%;border-collapse:collapse;font-size:.75rem}
+  .rd-tbl thead tr.rd-top th{background:#f8fafc;font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b;padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center}
+  .rd-tbl thead tr.rd-top th:nth-child(2){text-align:left}
+  .rd-tbl thead tr.rd-sub th{font-size:.6rem;color:#94a3b8;padding:5px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:600;letter-spacing:.5px}
+  .rd-tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#1e2a3a;text-align:center;vertical-align:middle}
+  .rd-tbl td:nth-child(2){text-align:left}
+  .rd-tbl tr:last-child td{border-bottom:none}
+  .rd-tbl tr:hover td{background:#f8fafc}
+  .rd-gsep{border-left:2px solid #e2e8f0}
+  .rd-gh-blue{background:#e6f1fb;color:#185fa5;border-left:2px solid #b5d4f4}
+  .rd-gh-green{background:#eaf3de;color:#3b6d11;border-left:2px solid #c0dd97}
+  .rd-gh-amber{background:#faeeda;color:#854f0b;border-left:2px solid #fac775}
+  .rd-avatar{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0}
+  .rd-name-cell{display:flex;align-items:center;gap:8px}
+  .rd-bar-wrap{display:flex;align-items:center;gap:5px;justify-content:center}
+  .rd-bar-bg{height:5px;width:44px;background:#e8eef5;border-radius:99px;overflow:hidden;flex-shrink:0}
+  .rd-bar-fill{height:100%;border-radius:99px}
+  .rd-ok{color:#0f6e56;font-weight:700}
+  .rd-mid{color:#854f0b;font-weight:700}
+  .rd-fail{color:#a32d2d;font-weight:700}
+  .rd-score-pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.65rem;font-weight:700}
+  .rd-score-note{font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0}
+  .rd-comp-card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 8px rgba(13,43,78,.07)}
+  .rd-comp-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+  .rd-comp-name{font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b}
+  .rd-comp-pct{font-size:1.5rem;font-weight:800}
+  .rd-comp-sub{font-size:.67rem;color:#94a3b8;margin-bottom:8px}
+  .rd-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 8px rgba(13,43,78,.07);overflow:hidden;margin-bottom:20px}
+  .rd-wrap-head{padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+  .rd-wrap-title{font-size:.68rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#185fa5}
+  .rd-interval-ok{color:#0f6e56;font-weight:700}
+  .rd-interval-mid{color:#854f0b;font-weight:700}
+  .rd-interval-fail{color:#a32d2d;font-weight:700}
   @media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.pend-summary{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:900px){.g3{grid-template-columns:repeat(2,1fr)}.sidebar{width:180px}.pend-summary{grid-template-columns:repeat(2,1fr)}.sol-body{flex-direction:column}.sol-table-col{width:100%;border-right:none;border-bottom:1px solid #e2e8f0}}
   @media(max-width:600px){.g4,.g3,.g2{grid-template-columns:1fr}.pend-summary{grid-template-columns:repeat(2,1fr)}.sidebar{width:60px}.nav-item span{display:none}.sidebar-title{display:none}}
@@ -350,28 +408,58 @@
           <select class="page-msel" id="msel-men" onchange="onPageMesChange('men')"><option value="">— Todos —</option></select>
         </div>
       </div>
-      <div class="slabel"><h2>🔒 Recuperaciones</h2></div>
-      <div class="grid g3">
-        <div class="card" id="c-robos"><span class="icon">🚨</span><div class="ctitle">Robos</div><div class="cval" id="v-robos">—</div><div class="cmeta">Meta: <b>≥ 90%</b></div><div class="cdet" id="d-robos"> </div><div class="pw"><div class="pb" id="pb-robos" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-robos">—</span><span>100%</span></div><span class="badge bneutral" id="b-robos">⏳ Sin datos</span></div>
-        <div class="card" id="c-abusos"><span class="icon">⚠️</span><div class="ctitle">Abusos de Confianza</div><div class="cval" id="v-abusos">—</div><div class="cmeta">Meta: <b>≥ 80%</b></div><div class="cdet" id="d-abusos"> </div><div class="pw"><div class="pb" id="pb-abusos" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-abusos">—</span><span>100%</span></div><span class="badge bneutral" id="b-abusos">⏳ Sin datos</span></div>
-        <div class="card" id="c-creditos"><span class="icon">💳</span><div class="ctitle">Créditos</div><div class="cval" id="v-creditos">—</div><div class="cmeta">Meta: <b>≥ 90%</b></div><div class="cdet" id="d-creditos"> </div><div class="pw"><div class="pb" id="pb-creditos" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-creditos">—</span><span>100%</span></div><span class="badge bneutral" id="b-creditos">⏳ Sin datos</span></div>
+      <div class="rd-section-head rd-sh-blue">🔒 Recuperaciones</div>
+      <div class="rd-kpi-grid g3">
+        <div class="rd-kpi-card bl" id="c-robos">
+          <div class="rd-kpi-lbl">🚨 Robos</div>
+          <div class="rd-kpi-val bl" id="v-robos">—</div>
+          <div class="rd-kpi-meta">Meta: ≥ 90% · <span id="d-robos"> </span></div>
+          <div class="rd-pw"><div class="rd-pb" id="pb-robos" style="width:0%;background:#185fa5"></div></div>
+          <span class="rd-badge rd-bneutral" id="b-robos">⏳ Sin datos</span>
+        </div>
+        <div class="rd-kpi-card bl" id="c-abusos">
+          <div class="rd-kpi-lbl">⚠️ Abusos de Confianza</div>
+          <div class="rd-kpi-val bl" id="v-abusos">—</div>
+          <div class="rd-kpi-meta">Meta: ≥ 80% · <span id="d-abusos"> </span></div>
+          <div class="rd-pw"><div class="rd-pb" id="pb-abusos" style="width:0%;background:#185fa5"></div></div>
+          <span class="rd-badge rd-bneutral" id="b-abusos">⏳ Sin datos</span>
+        </div>
+        <div class="rd-kpi-card gn" id="c-creditos">
+          <div class="rd-kpi-lbl">💳 Créditos</div>
+          <div class="rd-kpi-val gn" id="v-creditos">—</div>
+          <div class="rd-kpi-meta">Meta: ≥ 90% · <span id="d-creditos"> </span></div>
+          <div class="rd-pw"><div class="rd-pb" id="pb-creditos" style="width:0%;background:#0f6e56"></div></div>
+          <span class="rd-badge rd-bneutral" id="b-creditos">⏳ Sin datos</span>
+        </div>
       </div>
-      <div class="slabel"><h2>🎧 Soporte</h2></div>
-      <div class="grid g2">
-        <div class="card" id="c-tickets"><span class="icon">🎫</span><div class="ctitle">Tiempo de Primera Respuesta</div><div class="cval" id="v-tickets">—</div><div class="cmeta">Meta: <b>≤ 15 min</b></div><div class="cdet" id="d-tickets"> </div><div class="pw"><div class="pb" id="pb-tickets" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-tickets">—</span><span>100%</span></div><span class="badge bneutral" id="b-tickets">⏳ Sin datos</span></div>
-        <div class="card" id="c-capac"><span class="icon">📚</span><div class="ctitle">Satisfacción de Capacitaciones</div><div class="cval" id="v-capac">—</div><div class="cmeta">Meta: <b>≥ 95%</b></div><div class="cdet" id="d-capac"> </div><div class="pw"><div class="pb" id="pb-capac" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-capac">—</span><span>100%</span></div><span class="badge bneutral" id="b-capac">⏳ Sin datos</span></div>
+      <div class="rd-section-head rd-sh-green">🎧 Soporte</div>
+      <div class="rd-kpi-grid g2">
+        <div class="rd-kpi-card gn" id="c-tickets">
+          <div class="rd-kpi-lbl">🎫 Tiempo de Primera Respuesta</div>
+          <div class="rd-kpi-val gn" id="v-tickets">—</div>
+          <div class="rd-kpi-meta">Meta: ≤ 15 min · <span id="d-tickets"> </span></div>
+          <div class="rd-pw"><div class="rd-pb" id="pb-tickets" style="width:0%;background:#0f6e56"></div></div>
+          <span class="rd-badge rd-bneutral" id="b-tickets">⏳ Sin datos</span>
+        </div>
+        <div class="rd-kpi-card gn" id="c-capac">
+          <div class="rd-kpi-lbl">📚 Satisfacción de Capacitaciones</div>
+          <div class="rd-kpi-val gn" id="v-capac">—</div>
+          <div class="rd-kpi-meta">Meta: ≥ 95% · <span id="d-capac"> </span></div>
+          <div class="rd-pw"><div class="rd-pb" id="pb-capac" style="width:0%;background:#0f6e56"></div></div>
+          <span class="rd-badge rd-bneutral" id="b-capac">⏳ Sin datos</span>
+        </div>
       </div>
-      <div class="slabel"><h2>🌐 Conectividad</h2></div>
-      <div class="grid g4" style="margin-bottom:0">
-        <div class="card" id="c-con-general"><span class="icon">📡</span><div class="ctitle">Conectividad General</div><div class="cval" id="v-con-general">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-general">⏳</div><div class="pw"><div class="pb" id="pb-con-general" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-general">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-general">⏳ Sin datos</span></div>
-        <div class="card" id="c-con-legacy"><span class="icon">🗄️</span><div class="ctitle">Legacy</div><div class="cval" id="v-con-legacy">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-legacy">⏳</div><div class="pw"><div class="pb" id="pb-con-legacy" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-legacy">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-legacy">⏳ Sin datos</span></div>
-        <div class="card" id="c-con-s1"><span class="icon">🛰️</span><div class="ctitle">S1</div><div class="cval" id="v-con-s1">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-s1">⏳</div><div class="pw"><div class="pb" id="pb-con-s1" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-s1">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-s1">⏳ Sin datos</span></div>
-        <div class="card" id="c-con-s2"><span class="icon">🛰️</span><div class="ctitle">S2</div><div class="cval" id="v-con-s2">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-s2">⏳</div><div class="pw"><div class="pb" id="pb-con-s2" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-s2">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-s2">⏳ Sin datos</span></div>
+      <div class="rd-section-head rd-sh-amber">🌐 Conectividad</div>
+      <div class="rd-kpi-grid g4" style="margin-bottom:0">
+        <div class="rd-kpi-card" id="c-con-general"><div class="rd-kpi-lbl">📡 Conectividad General</div><div class="rd-kpi-val" id="v-con-general">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-general">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-general" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-general">⏳ Sin datos</span></div>
+        <div class="rd-kpi-card" id="c-con-legacy"><div class="rd-kpi-lbl">🗄️ Legacy</div><div class="rd-kpi-val" id="v-con-legacy">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-legacy">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-legacy" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-legacy">⏳ Sin datos</span></div>
+        <div class="rd-kpi-card" id="c-con-s1"><div class="rd-kpi-lbl">🛰️ S1</div><div class="rd-kpi-val" id="v-con-s1">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-s1">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-s1" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-s1">⏳ Sin datos</span></div>
+        <div class="rd-kpi-card" id="c-con-s2"><div class="rd-kpi-lbl">🛰️ S2</div><div class="rd-kpi-val" id="v-con-s2">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-s2">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-s2" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-s2">⏳ Sin datos</span></div>
       </div>
-      <div class="grid g3" style="margin-top:16px">
-        <div class="card" id="c-con-s3"><span class="icon">🛰️</span><div class="ctitle">S3</div><div class="cval" id="v-con-s3">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-s3">⏳</div><div class="pw"><div class="pb" id="pb-con-s3" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-s3">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-s3">⏳ Sin datos</span></div>
-        <div class="card" id="c-con-bafar"><span class="icon">🏭</span><div class="ctitle">Bafar</div><div class="cval" id="v-con-bafar">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-bafar">⏳</div><div class="pw"><div class="pb" id="pb-con-bafar" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-bafar">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-bafar">⏳ Sin datos</span></div>
-        <div class="card" id="c-con-recuperamovil"><span class="icon">📱</span><div class="ctitle">Recuperamovil</div><div class="cval" id="v-con-recuperamovil">—</div><div class="cmeta">Meta: <b>≥ 85%</b></div><div class="cdet" id="d-con-recuperamovil">⏳</div><div class="pw"><div class="pb" id="pb-con-recuperamovil" style="width:0%"></div></div><div class="plabs"><span>0%</span><span class="av" id="pl-con-recuperamovil">—</span><span>100%</span></div><span class="badge bneutral" id="b-con-recuperamovil">⏳ Sin datos</span></div>
+      <div class="rd-kpi-grid g3" style="margin-top:12px">
+        <div class="rd-kpi-card" id="c-con-s3"><div class="rd-kpi-lbl">🛰️ S3</div><div class="rd-kpi-val" id="v-con-s3">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-s3">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-s3" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-s3">⏳ Sin datos</span></div>
+        <div class="rd-kpi-card" id="c-con-bafar"><div class="rd-kpi-lbl">🏭 Bafar</div><div class="rd-kpi-val" id="v-con-bafar">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-bafar">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-bafar" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-bafar">⏳ Sin datos</span></div>
+        <div class="rd-kpi-card" id="c-con-recuperamovil"><div class="rd-kpi-lbl">📱 Recuperamovil</div><div class="rd-kpi-val" id="v-con-recuperamovil">—</div><div class="rd-kpi-meta">Meta: ≥ 85% · <span id="d-con-recuperamovil">⏳</span></div><div class="rd-pw"><div class="rd-pb" id="pb-con-recuperamovil" style="width:0%"></div></div><span class="rd-badge rd-bneutral" id="b-con-recuperamovil">⏳ Sin datos</span></div>
       </div>
     </div>
 
@@ -384,14 +472,14 @@
           <select class="page-msel" id="msel-rec" onchange="onPageMesChange('rec')"><option value="">— Todos —</option></select>
         </div>
       </div>
-      <div class="slabel"><h2>🏢 Recuperación por Compañía</h2></div>
+      <div class="rd-section-head rd-sh-blue">🏢 Recuperación por Compañía</div>
       <div class="grid g4" id="rec-companias" style="margin-bottom:22px"></div>
       <div id="nc-meses-numaris"></div><div id="nc-meses-inbursa"></div>
-      <div class="slabel"><h2>⏱️ Porcentaje de Recuperación por Intervalos de Tiempo</h2></div>
-      <div class="table-wrap" style="margin-bottom:22px">
-        <div class="table-header"><span class="table-title">Tiempo de reporte del cliente</span></div>
-        <table><thead><tr><th>Intervalo</th><th>Total casos</th><th>Recuperados</th><th>No Recuperados</th><th>% Recuperación</th><th>Tendencia</th></tr></thead>
-        <tbody id="rec-intervalos-body"><tr class="loading-row"><td colspan="6">⏳ Cargando...</td></tr></tbody></table>
+      <div class="rd-section-head rd-sh-amber">⏱️ Porcentaje de Recuperación por Intervalos de Tiempo</div>
+      <div class="rd-wrap" style="margin-bottom:22px">
+        <div class="rd-wrap-head"><span class="rd-wrap-title">Tiempo de reporte del cliente</span></div>
+        <table class="rd-tbl"><thead><tr class="rd-top"><th style="text-align:left;padding:8px 12px">Intervalo</th><th>Total casos</th><th>Recuperados</th><th>No Recuperados</th><th>% Recuperación</th><th>Tendencia</th></tr></thead>
+        <tbody id="rec-intervalos-body"><tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando...</td></tr></tbody></table>
       </div>
       <div id="nc-hist-numaris"></div><div id="nc-hist-inbursa"></div><div id="nc-hist-easytrack"></div>
     </div>
@@ -405,15 +493,29 @@
           <select class="page-msel" id="msel-srv" onchange="onPageMesChange('srv')"><option value="">— Todos —</option></select>
         </div>
       </div>
-      <div class="grid g3" style="margin-bottom:22px">
-        <div class="stat-card"><div class="stat-icon blue">🎫</div><div><div class="stat-val" id="srv-total">—</div><div class="stat-label">Total tickets</div></div></div>
-        <div class="stat-card"><div class="stat-icon green">⏱️</div><div><div class="stat-val" id="srv-frt">—</div><div class="stat-label">Tiempo prom. respuesta</div></div></div>
-        <div class="stat-card"><div class="stat-icon amber">📚</div><div><div class="stat-val" id="srv-capac">—</div><div class="stat-label">Satisfacción capacitaciones</div></div></div>
+      <div class="rd-stat-row">
+        <div class="rd-stat-card">
+          <div class="rd-stat-lbl">🎫 Total Tickets</div>
+          <div class="rd-stat-num" id="srv-total">—</div>
+          <div style="font-size:.67rem;color:#94a3b8">este período</div>
+        </div>
+        <div class="rd-stat-card">
+          <div class="rd-stat-lbl">⏱️ Tiempo Prom. Respuesta</div>
+          <div class="rd-stat-num" id="srv-frt" style="color:#0f6e56">—</div>
+          <span class="rd-badge rd-bok" style="font-size:.6rem">Meta ≤ 15 min</span>
+        </div>
+        <div class="rd-stat-card">
+          <div class="rd-stat-lbl">📚 Satisfacción Capacitaciones</div>
+          <div class="rd-stat-num" id="srv-capac" style="color:#0f6e56">—</div>
+          <span class="rd-badge rd-bok" style="font-size:.6rem">Meta ≥ 95%</span>
+        </div>
       </div>
-      <div class="table-wrap">
-        <div class="table-header"><span class="table-title">🎫 Tickets por agente</span></div>
-        <table><thead><tr><th>#</th><th>Agente</th><th>Tickets</th><th>% del total</th><th>Tiempo prom. respuesta</th></tr></thead>
-        <tbody id="srv-agentes-body"><tr class="loading-row"><td colspan="5">⏳ Cargando agentes...</td></tr></tbody></table>
+      <div class="rd-wrap">
+        <div class="rd-wrap-head"><span class="rd-wrap-title">🎫 Tickets por agente</span></div>
+        <table class="rd-tbl">
+          <thead><tr class="rd-top"><th style="width:36px">#</th><th style="text-align:left">Agente</th><th>Tickets</th><th>% del total</th><th>Tiempo prom. respuesta</th></tr></thead>
+          <tbody id="srv-agentes-body"><tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando agentes...</td></tr></tbody>
+        </table>
       </div>
       <div id="nc-capac"></div><div id="nc-carso"></div>
     </div>
@@ -427,14 +529,55 @@
           <select class="page-msel" id="msel-des" onchange="onPageMesChange('des')"><option value="">— Todos —</option></select>
         </div>
       </div>
-      <div class="slabel"><h2>🔒 Recuperaciones Monitoristas</h2></div>
-      <div class="table-wrap" style="margin-bottom:22px"><table><thead><tr><th>#</th><th>Monitorista</th><th>Total casos</th><th>Recuperados</th><th>No recuperados</th><th>% Efectividad</th></tr></thead><tbody id="rec-monitoristas-body"><tr class="loading-row"><td colspan="6">⏳ Cargando...</td></tr></tbody></table></div>
-      <div class="slabel"><h2>🎫 Tickets Monitoristas</h2></div>
-      <div class="table-wrap" style="margin-bottom:22px"><table><thead><tr><th>#</th><th>Monitorista</th><th>Total tickets</th><th>% del total</th><th>Tiempo prom. respuesta</th></tr></thead><tbody id="tick-monitoristas-body"><tr class="loading-row"><td colspan="5">⏳ Cargando...</td></tr></tbody></table></div>
-      <div class="slabel"><h2>🔒 Recuperaciones Especialistas</h2></div>
-      <div class="table-wrap" style="margin-bottom:22px"><table><thead><tr><th>#</th><th>Especialista</th><th>Total casos</th><th>Recuperados</th><th>No recuperados</th><th>% Efectividad</th></tr></thead><tbody id="rec-especialistas-body"><tr class="loading-row"><td colspan="6">⏳ Cargando...</td></tr></tbody></table></div>
-      <div class="slabel"><h2>🎫 Tickets Especialistas</h2></div>
-      <div class="table-wrap" style="margin-bottom:22px"><table><thead><tr><th>#</th><th>Especialista</th><th>Total tickets</th><th>% del total</th><th>Tiempo prom. respuesta</th></tr></thead><tbody id="tick-especialistas-body"><tr class="loading-row"><td colspan="5">⏳ Cargando...</td></tr></tbody></table></div>
+
+      <!-- MONITORISTAS -->
+      <div class="rd-section-head rd-sh-blue">👥 Monitoristas</div>
+      <div class="rd-score-note rd-score-note" style="font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0">Ranking: Score = (% Efectividad recuperaciones × 0.5) + (% Participación tickets × 0.5)</div>
+      <div class="rd-wrap" style="margin-bottom:22px;overflow-x:auto">
+        <table class="rd-tbl" style="min-width:800px">
+          <thead>
+            <tr class="rd-top">
+              <th rowspan="2" style="width:36px;text-align:center;vertical-align:middle">#</th>
+              <th rowspan="2" style="text-align:left;min-width:140px;vertical-align:middle">Monitorista</th>
+              <th colspan="4" class="rd-gh-blue">Recuperaciones</th>
+              <th colspan="3" class="rd-gh-green">Tickets</th>
+              <th rowspan="2" class="rd-gh-amber" style="vertical-align:middle;min-width:70px">Score</th>
+            </tr>
+            <tr class="rd-sub">
+              <th class="rd-gsep">Casos</th><th>Rec.</th><th>No rec.</th><th>% Efect.</th>
+              <th class="rd-gsep">Total</th><th>% Total</th><th>T. prom.</th>
+            </tr>
+          </thead>
+          <tbody id="des-monitoristas-body">
+            <tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ESPECIALISTAS -->
+      <div class="rd-section-head rd-sh-green">⭐ Especialistas</div>
+      <div class="rd-score-note" style="font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0">Ranking: Score = Tickets atendidos ÷ Tiempo promedio de respuesta (min) — mayor productividad = mejor posición</div>
+      <div class="rd-wrap" style="margin-bottom:22px;overflow-x:auto">
+        <table class="rd-tbl" style="min-width:800px">
+          <thead>
+            <tr class="rd-top">
+              <th rowspan="2" style="width:36px;text-align:center;vertical-align:middle">#</th>
+              <th rowspan="2" style="text-align:left;min-width:140px;vertical-align:middle">Especialista</th>
+              <th colspan="4" class="rd-gh-blue">Recuperaciones</th>
+              <th colspan="3" class="rd-gh-green">Tickets</th>
+              <th rowspan="2" class="rd-gh-amber" style="vertical-align:middle;min-width:70px">Score</th>
+            </tr>
+            <tr class="rd-sub">
+              <th class="rd-gsep">Casos</th><th>Rec.</th><th>No rec.</th><th>% Efect.</th>
+              <th class="rd-gsep">Total</th><th>% Total</th><th>T. prom.</th>
+            </tr>
+          </thead>
+          <tbody id="des-especialistas-body">
+            <tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="slabel"><h2>📋 Atención a Solicitudes</h2></div>
       <div class="sol-wrap">
         <div class="sol-header"><div><div class="sol-title">Atención Solicitudes</div><div class="sol-subtitle" id="sol-subtitle">Total de actividades atendidas por monitorista</div></div></div>
@@ -894,15 +1037,13 @@ function renderConectividad(mes){
   var generalPct=platVals.length>0?(platVals.reduce(function(s,v){return s+v;},0)/platVals.length):pctMes;
   var setCard=function(id,pct,det){
     var good=pct!==null&&pct>=META;
-    document.getElementById('v-con-'+id).textContent=pct!==null?pct.toFixed(2)+'%':'—';
-    document.getElementById('d-con-'+id).textContent=pct!==null?(det||'Conectividad registrada'):'Sin datos';
-    document.getElementById('pb-con-'+id).style.width=(pct!==null?Math.min(pct,100):0)+'%';
-    document.getElementById('pb-con-'+id).className='pb'+(good?'':' fail');
-    document.getElementById('pl-con-'+id).textContent=pct!==null?pct.toFixed(2)+'%':'—';
-    document.getElementById('pl-con-'+id).className='av'+(good?'':' fail');
-    document.getElementById('b-con-'+id).className='badge '+(pct===null?'bneutral':good?'bok':'bfail');
-    document.getElementById('b-con-'+id).textContent=pct===null?'⏳ Sin datos':good?'✅ Cumple meta':'❌ Bajo meta';
-    document.getElementById('c-con-'+id).className='card '+(pct===null?'':good?'ok':'fail');
+    var color=pct===null?null:good?'#0f6e56':'#a32d2d';
+    var ve=document.getElementById('v-con-'+id),de=document.getElementById('d-con-'+id),pbe=document.getElementById('pb-con-'+id),be=document.getElementById('b-con-'+id),ce=document.getElementById('c-con-'+id);
+    if(ve){ve.textContent=pct!==null?pct.toFixed(2)+'%':'—';ve.style.color=color||'#0d2b4e';}
+    if(de)de.textContent=pct!==null?(det||'Conectividad registrada'):'Sin datos';
+    if(pbe){pbe.style.width=(pct!==null?Math.min(pct,100):0)+'%';pbe.style.background=good?'#0f6e56':'#a32d2d';}
+    if(be){be.className='rd-badge '+(pct===null?'':good?'rd-bok':'rd-bfail');be.textContent=pct===null?'⏳ Sin datos':good?'✅ Cumple meta':'❌ Bajo meta';}
+    if(ce)ce.className='rd-kpi-card '+(pct===null?'':good?'gn':'rd');
   };
   setCard('general',generalPct,platVals.length>0?'Promedio de '+platVals.length+' plataformas':'Conectividad del mes');
   subKeys.forEach(function(id){setCard(id,getConPctMes(id,mes),'Conectividad registrada');});
@@ -1113,13 +1254,25 @@ async function loadZohoAgentes(mes){
 function renderAgentesZoho(){
   var total=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
   document.getElementById('srv-total').textContent=total||'—';
-  document.getElementById('srv-frt').textContent=getGlobalFrt(zohoAgentes)?fmtMin(getGlobalFrt(zohoAgentes)):'—';
+  var frt=getGlobalFrt(zohoAgentes);
+  var frtEl=document.getElementById('srv-frt');
+  frtEl.textContent=frt?fmtMin(frt):'—';
+  frtEl.style.color=frt&&frt<=15?'#0f6e56':'#a32d2d';
   var body=document.getElementById('srv-agentes-body');
-  if(!zohoAgentes.length){body.innerHTML='<tr class="loading-row"><td colspan="5">Sin datos</td></tr>';return;}
+  if(!zohoAgentes.length){body.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:28px">Sin datos</td></tr>';return;}
+  var avatarColors=[['#e6f1fb','#185fa5'],['#eaf3de','#3b6d11'],['#faeeda','#854f0b'],['#fcebeb','#a32d2d'],['#f5f3ff','#7c3aed']];
   body.innerHTML=zohoAgentes.slice().sort(function(a,b){return b.tickets-a.tickets;}).map(function(a,i){
-    var pct=total>0?((a.tickets/total)*100).toFixed(1):0;var avgMin=getFrt(a);var good=avgMin>0&&avgMin<=15;
-    var rankCls=i===0?'rank rank-1':i===1?'rank rank-2':i===2?'rank rank-3':'rank';
-    return'<tr><td class="'+rankCls+'">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</td><td class="agent-name">'+toTitleCase(a.nombre)+'</td><td>'+a.tickets+'</td><td>'+pct+'%</td><td><span style="color:'+(avgMin===0?'#94a3b8':good?'#1d4ed8':'#b91c1c')+';font-weight:700">'+(avgMin?fmtMin(avgMin):'—')+'</span></td></tr>';
+    var pct=total>0?((a.tickets/total)*100):0;var avgMin=getFrt(a);var good=avgMin>0&&avgMin<=15;
+    var initials=(a.nombre.trim().split(' ')[0]||'?')[0]+(a.nombre.trim().split(' ')[1]?a.nombre.trim().split(' ')[1][0]:'');
+    var ac=avatarColors[i%avatarColors.length];
+    var barW=Math.min(pct,100).toFixed(1);
+    return'<tr>'
+      +'<td style="text-align:center">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'<span style="color:#94a3b8">'+(i+1)+'</span>')+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:'+ac[0]+';color:'+ac[1]+';display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700">'+initials.toUpperCase()+'</div>'+toTitleCase(a.nombre)+'</div></td>'
+      +'<td>'+a.tickets+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="height:5px;width:60px;background:#e8eef5;border-radius:99px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:#185fa5;border-radius:99px"></div></div>'+pct.toFixed(1)+'%</div></td>'
+      +'<td><span style="color:'+(avgMin===0?'#94a3b8':good?'#0f6e56':'#a32d2d')+';font-weight:700">'+(avgMin?fmtMin(avgMin):'—')+'</span></td>'
+      +'</tr>';
   }).join('');
 }
 
@@ -1137,17 +1290,15 @@ async function loadZohoTickets(mes){
     if(tCnt2>0)zohoHistorial[mesKey]=tMin2/tCnt2;
     if(!totalTickets&&!avgMin){resetKPI('tickets');return;}
     var meta=15,pct=avgMin>0?Math.min((meta/avgMin)*100,100):0,good=avgMin>0&&avgMin<=meta,label=avgMin>0?fmtMin(avgMin):'—';
-    document.getElementById('v-tickets').textContent=label;
-    document.getElementById('d-tickets').textContent='Total: '+totalTickets+' tickets';
-    document.getElementById('pb-tickets').style.width=pct+'%';
-    document.getElementById('pb-tickets').className='pb'+(good?'':' fail');
-    document.getElementById('pl-tickets').textContent=label;
-    document.getElementById('pl-tickets').className='av'+(good?'':' fail');
-    document.getElementById('b-tickets').className='badge '+(good?'bok':'bfail');
-    document.getElementById('b-tickets').textContent=good?'✅ Cumple meta':'❌ Sobre meta';
-    document.getElementById('c-tickets').className='card '+(good?'ok':'fail');
-    document.getElementById('srv-frt').textContent=label;
-    document.getElementById('srv-total').textContent=totalTickets||'—';
+    var vt=document.getElementById('v-tickets'),dt=document.getElementById('d-tickets'),pbt=document.getElementById('pb-tickets'),bt=document.getElementById('b-tickets'),ct=document.getElementById('c-tickets');
+    if(vt)vt.textContent=label;
+    if(dt)dt.textContent='Total: '+totalTickets+' tickets';
+    if(pbt){pbt.style.width=pct+'%';pbt.style.background=good?'#0f6e56':'#a32d2d';}
+    if(bt){bt.className='rd-badge '+(good?'rd-bok':'rd-bfail');bt.textContent=good?'✅ Cumple meta':'❌ Sobre meta';}
+    if(ct)ct.className='rd-kpi-card '+(good?'gn':'rd');
+    var sfrt=document.getElementById('srv-frt'),stot=document.getElementById('srv-total');
+    if(sfrt)sfrt.textContent=label;
+    if(stot)stot.textContent=totalTickets||'—';
     if(!zohoAgentes.length){zohoAgentes=agentes;renderAgentesZoho();renderDesempeno(mes);}
     if(currentPage==='resumen')renderResumen();
   }catch(e){document.getElementById('d-tickets').textContent='⚠️ '+e.message;resetKPI('tickets');}
@@ -1156,19 +1307,86 @@ async function loadZohoTickets(mes){
 function renderDesempeno(mes){
   var mesKey=mes||MESES_ORD[now.getMonth()];
   var filas=(mesKey?robosData.filter(function(r){return r.mes===mesKey;}):robosData).filter(function(r){return r.ticketZoho==='SI'||r.ticketZoho==='NO';});
-  var porAgente={};
-  filas.forEach(function(r){var a=r.monitorista||'Sin asignar';if(!porAgente[a])porAgente[a]={total:0,rec:0};porAgente[a].total++;if(r.recuperado==='si')porAgente[a].rec++;});
-  var toRows=function(entries){return entries.map(function(e){var d=e[1];return{nombre:e[0],total:d.total,rec:d.rec,noRec:d.total-d.rec,pct:d.total>0?(d.rec/d.total*100):0};}).sort(function(a,b){return b.pct-a.pct;});};
-  var monitoristas=toRows(Object.entries(porAgente).filter(function(e){return!ESPECIALISTAS.includes(e[0].toUpperCase().trim());}));
-  var especialistas=toRows(Object.entries(porAgente).filter(function(e){return ESPECIALISTAS.includes(e[0].toUpperCase().trim());}));
-  var renderRecRows=function(rows,bodyId){document.getElementById(bodyId).innerHTML=rows.length?rows.map(function(r,i){var good=r.pct>=90;var rankCls=i===0?'rank rank-1':i===1?'rank rank-2':i===2?'rank rank-3':'rank';return'<tr><td class="'+rankCls+'">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</td><td class="agent-name">'+toTitleCase(r.nombre)+'</td><td>'+r.total+'</td><td>'+r.rec+'</td><td>'+r.noRec+'</td><td><span style="color:'+(good?'#1d4ed8':'#b91c1c')+';font-weight:700">'+r.pct.toFixed(1)+'%</span></td></tr>';}).join(''):'<tr class="loading-row"><td colspan="6">Sin datos para este período</td></tr>';};
-  renderRecRows(monitoristas,'rec-monitoristas-body');renderRecRows(especialistas,'rec-especialistas-body');
-  var renderTickRows=function(tipo,bodyId){
-    var rows=zohoAgentes.filter(function(a){var isEsp=ESPECIALISTAS.includes(a.nombre.toUpperCase().trim());return tipo==='especialistas'?isEsp:!isEsp;}).sort(function(a,b){return b.tickets-a.tickets;});
-    var total=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
-    document.getElementById(bodyId).innerHTML=rows.length?rows.map(function(a,i){var pct=total>0?((a.tickets/total)*100).toFixed(1):0;var avgMin=getFrt(a);var rankCls=i===0?'rank rank-1':i===1?'rank rank-2':i===2?'rank rank-3':'rank';return'<tr><td class="'+rankCls+'">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</td><td class="agent-name">'+toTitleCase(a.nombre)+'</td><td>'+a.tickets+'</td><td>'+pct+'%<span class="score-bar"><span class="score-fill" style="width:'+pct+'%"></span></span></td><td>'+(avgMin?fmtMin(avgMin):'—')+'</td></tr>';}).join(''):'<tr class="loading-row"><td colspan="5">⏳ Sin datos</td></tr>';
-  };
-  renderTickRows('monitoristas','tick-monitoristas-body');renderTickRows('especialistas','tick-especialistas-body');
+  var totalTickets=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
+
+  // Helpers
+  function getInitials(n){var p=n.trim().split(' ');return(p[0]?p[0][0]:'')+(p[1]?p[1][0]:'');}
+  function avatarColor(i){var c=[['#e6f1fb','#185fa5'],['#eaf3de','#3b6d11'],['#faeeda','#854f0b'],['#fcebeb','#a32d2d'],['#f5f3ff','#7c3aed']];return c[i%c.length];}
+  function medal(i){return i===0?'🥇':i===1?'🥈':i===2?'🥉':'<span style="color:#94a3b8">'+(i+1)+'</span>';}
+  function barHtml(pct,color){return'<div style="display:flex;align-items:center;gap:5px;justify-content:center"><div style="height:5px;width:44px;background:#e8eef5;border-radius:99px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:'+Math.min(pct,100).toFixed(1)+'%;background:'+color+';border-radius:99px"></div></div></div>';}
+  function pctColor(p){return p>=90?'#0f6e56':p>=60?'#854f0b':'#a32d2d';}
+  function timeColor(min){return min>0&&min<=15?'#0f6e56':'#a32d2d';}
+  function scorePillHtml(score,color,bg){return'<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:.65rem;font-weight:700;background:'+bg+';color:'+color+'">'+score.toFixed(1)+'</span>';}
+
+  // ── MONITORISTAS ──
+  var porAgenteM={};
+  filas.forEach(function(r){var a=r.monitorista||'Sin asignar';if(ESPECIALISTAS.includes(a.toUpperCase().trim()))return;if(!porAgenteM[a])porAgenteM[a]={total:0,rec:0};porAgenteM[a].total++;if(r.recuperado==='si')porAgenteM[a].rec++;});
+  var monZoho=zohoAgentes.filter(function(a){return!ESPECIALISTAS.includes(a.nombre.toUpperCase().trim());});
+
+  var monRows=Object.keys(porAgenteM).map(function(nombre){
+    var d=porAgenteM[nombre];
+    var pctEf=d.total>0?(d.rec/d.total*100):0;
+    var zoho=monZoho.find(function(a){return a.nombre.toUpperCase().trim()===nombre.toUpperCase().trim();})||{tickets:0,count:0,totalMinutes:0};
+    var pctTick=totalTickets>0?((zoho.tickets/totalTickets)*100):0;
+    var score=(pctEf*0.5)+(pctTick*0.5);
+    var avgMin=getFrt(zoho);
+    return{nombre:nombre,total:d.total,rec:d.rec,noRec:d.total-d.rec,pctEf:pctEf,tickets:zoho.tickets,pctTick:pctTick,avgMin:avgMin,score:score};
+  }).sort(function(a,b){return b.score-a.score;});
+
+  var mbody=document.getElementById('des-monitoristas-body');
+  mbody.innerHTML=monRows.length?monRows.map(function(r,i){
+    var ac=avatarColor(i);
+    return'<tr>'
+      +'<td style="text-align:center">'+medal(i)+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:'+ac[0]+';color:'+ac[1]+';display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0">'+getInitials(r.nombre)+'</div>'+toTitleCase(r.nombre)+'</div></td>'
+      +'<td style="border-left:2px solid #e2e8f0">'+r.total+'</td>'
+      +'<td>'+r.rec+'</td>'
+      +'<td>'+r.noRec+'</td>'
+      +'<td>'+barHtml(r.pctEf,'#185fa5')+'<span style="color:'+pctColor(r.pctEf)+';font-weight:700;font-size:.72rem">'+r.pctEf.toFixed(1)+'%</span></td>'
+      +'<td style="border-left:2px solid #e2e8f0">'+r.tickets+'</td>'
+      +'<td>'+barHtml(r.pctTick,'#3b6d11')+'<span style="font-size:.72rem">'+r.pctTick.toFixed(1)+'%</span></td>'
+      +'<td><span style="color:'+timeColor(r.avgMin)+';font-weight:700">'+(r.avgMin?fmtMin(r.avgMin):'—')+'</span></td>'
+      +'<td style="border-left:2px solid #e2e8f0;text-align:center">'+scorePillHtml(r.score,r.score>=50?'#3b6d11':r.score>=25?'#854f0b':'#a32d2d',r.score>=50?'#eaf3de':r.score>=25?'#faeeda':'#fcebeb')+'</td>'
+      +'</tr>';
+  }).join(''):'<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:28px">Sin datos para este período</td></tr>';
+
+  // ── ESPECIALISTAS ──
+  var porAgenteE={};
+  filas.forEach(function(r){var a=r.monitorista||'Sin asignar';if(!ESPECIALISTAS.includes(a.toUpperCase().trim()))return;if(!porAgenteE[a])porAgenteE[a]={total:0,rec:0};porAgenteE[a].total++;if(r.recuperado==='si')porAgenteE[a].rec++;});
+  var espZoho=zohoAgentes.filter(function(a){return ESPECIALISTAS.includes(a.nombre.toUpperCase().trim());});
+
+  // Merge nombres de ambas fuentes
+  var espNombres=[...new Set([...Object.keys(porAgenteE),...espZoho.map(function(a){return a.nombre;})])];
+  var espRows=espNombres.map(function(nombre){
+    var d=porAgenteE[nombre]||{total:0,rec:0};
+    var zoho=espZoho.find(function(a){return a.nombre.toUpperCase().trim()===nombre.toUpperCase().trim();})||{tickets:0,count:0,totalMinutes:0};
+    var pctEf=d.total>0?(d.rec/d.total*100):null;
+    var pctTick=totalTickets>0?((zoho.tickets/totalTickets)*100):0;
+    var avgMin=getFrt(zoho);
+    // Score especialistas: tickets / tiempo_prom(min)
+    var score=avgMin>0?(zoho.tickets/avgMin):0;
+    return{nombre:nombre,total:d.total,rec:d.rec,noRec:d.total-d.rec,pctEf:pctEf,tickets:zoho.tickets,pctTick:pctTick,avgMin:avgMin,score:score};
+  }).sort(function(a,b){return b.score-a.score;});
+
+  var ebody=document.getElementById('des-especialistas-body');
+  ebody.innerHTML=espRows.length?espRows.map(function(r,i){
+    var ac=avatarColor(i);
+    var pctEfStr=r.pctEf!==null?r.pctEf.toFixed(1)+'%':'—';
+    var pctEfBar=r.pctEf!==null?barHtml(r.pctEf,'#185fa5'):'';
+    var pctEfColor=r.pctEf!==null?pctColor(r.pctEf):'#94a3b8';
+    return'<tr>'
+      +'<td style="text-align:center">'+medal(i)+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:'+ac[0]+';color:'+ac[1]+';display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0">'+getInitials(r.nombre)+'</div>'+toTitleCase(r.nombre)+'</div></td>'
+      +'<td style="border-left:2px solid #e2e8f0">'+r.total+'</td>'
+      +'<td>'+r.rec+'</td>'
+      +'<td>'+r.noRec+'</td>'
+      +'<td>'+pctEfBar+'<span style="color:'+pctEfColor+';font-weight:700;font-size:.72rem">'+pctEfStr+'</span></td>'
+      +'<td style="border-left:2px solid #e2e8f0">'+r.tickets+'</td>'
+      +'<td>'+barHtml(r.pctTick,'#3b6d11')+'<span style="font-size:.72rem">'+r.pctTick.toFixed(1)+'%</span></td>'
+      +'<td><span style="color:'+timeColor(r.avgMin)+';font-weight:700">'+(r.avgMin?fmtMin(r.avgMin):'—')+'</span></td>'
+      +'<td style="border-left:2px solid #e2e8f0;text-align:center">'+scorePillHtml(r.score,r.score>=10?'#3b6d11':r.score>=3?'#854f0b':'#a32d2d',r.score>=10?'#eaf3de':r.score>=3?'#faeeda':'#fcebeb')+'</td>'
+      +'</tr>';
+  }).join(''):'<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:28px">Sin datos para este período</td></tr>';
 }
 
 function poblarFiltrosPendientes(){
@@ -1333,9 +1551,9 @@ function exportPDF(){
 function toTitleCase(str){return str.toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});}
 function hexToRgb(hex){return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);}
 function fmtMin(m){return Math.floor(m/60).toString().padStart(2,'0')+':'+Math.floor(m%60).toString().padStart(2,'0')+':'+Math.floor((m*60)%60).toString().padStart(2,'0');}
-function setKPISimple(id,pct,total,meta){if(isNaN(pct)){resetKPI(id);return;}var good=pct>=meta;document.getElementById('v-'+id).textContent=pct.toFixed(2)+'%';document.getElementById('d-'+id).textContent=total+' encuestas respondidas';document.getElementById('pb-'+id).style.width=Math.min(pct,100)+'%';document.getElementById('pb-'+id).className='pb'+(good?'':' fail');document.getElementById('pl-'+id).textContent=pct.toFixed(2)+'%';document.getElementById('pl-'+id).className='av'+(good?'':' fail');document.getElementById('b-'+id).className='badge '+(good?'bok':'bfail');document.getElementById('b-'+id).textContent=good?'✅ Cumple meta':'❌ Bajo meta';document.getElementById('c-'+id).className='card '+(good?'ok':'fail');}
-function setKPI(id,d,meta){if(!d||d.pct===null||isNaN(d.pct)){resetKPI(id);return;}var pct=d.pct,good=pct>=meta;document.getElementById('v-'+id).textContent=pct.toFixed(2)+'%';document.getElementById('d-'+id).textContent=d.recup+' recuperadas · '+d.noRec+' no recuperadas';document.getElementById('pb-'+id).style.width=Math.min(pct,100)+'%';document.getElementById('pb-'+id).className='pb'+(good?'':' fail');document.getElementById('pl-'+id).textContent=pct.toFixed(2)+'%';document.getElementById('pl-'+id).className='av'+(good?'':' fail');document.getElementById('b-'+id).className='badge '+(good?'bok':'bfail');document.getElementById('b-'+id).textContent=good?'✅ Cumple meta':'❌ Bajo meta';document.getElementById('c-'+id).className='card '+(good?'ok':'fail');}
-function resetKPI(id){document.getElementById('v-'+id).textContent='—';document.getElementById('d-'+id).textContent='Sin datos para este período';document.getElementById('pb-'+id).style.width='0%';document.getElementById('pb-'+id).className='pb';document.getElementById('pl-'+id).textContent='—';document.getElementById('pl-'+id).className='av';document.getElementById('b-'+id).className='badge bneutral';document.getElementById('b-'+id).textContent='⏳ Sin datos';document.getElementById('c-'+id).className='card';}
+function setKPISimple(id,pct,total,meta){if(isNaN(pct)){resetKPI(id);return;}var good=pct>=meta;var ve=document.getElementById('v-'+id),de=document.getElementById('d-'+id),pbe=document.getElementById('pb-'+id),be=document.getElementById('b-'+id),ce=document.getElementById('c-'+id);if(ve)ve.textContent=pct.toFixed(2)+'%';if(de)de.textContent=total+' encuestas respondidas';if(pbe){pbe.style.width=Math.min(pct,100)+'%';pbe.style.background=good?'#0f6e56':'#a32d2d';}if(be){be.className='rd-badge '+(good?'rd-bok':'rd-bfail');be.textContent=good?'✅ Cumple meta':'❌ Bajo meta';}if(ce)ce.className='rd-kpi-card '+(good?'gn':'rd');}
+function setKPI(id,d,meta){if(!d||d.pct===null||isNaN(d.pct)){resetKPI(id);return;}var pct=d.pct,good=pct>=meta;var ve=document.getElementById('v-'+id),de=document.getElementById('d-'+id),pbe=document.getElementById('pb-'+id),be=document.getElementById('b-'+id),ce=document.getElementById('c-'+id);if(ve)ve.textContent=pct.toFixed(2)+'%';if(de)de.textContent=d.recup+' recuperadas · '+d.noRec+' no recuperadas';if(pbe){pbe.style.width=Math.min(pct,100)+'%';pbe.style.background=good?'#0f6e56':'#a32d2d';}if(be){be.className='rd-badge '+(good?'rd-bok':'rd-bfail');be.textContent=good?'✅ Cumple meta':'❌ Bajo meta';}if(ce)ce.className='rd-kpi-card '+(good?'gn':'rd');}
+function resetKPI(id){var ve=document.getElementById('v-'+id),de=document.getElementById('d-'+id),pbe=document.getElementById('pb-'+id),be=document.getElementById('b-'+id),ce=document.getElementById('c-'+id);if(ve)ve.textContent='—';if(de)de.textContent='Sin datos para este período';if(pbe)pbe.style.width='0%';if(be){be.className='rd-badge';be.textContent='⏳ Sin datos';}if(ce)ce.className='rd-kpi-card';}
 
 /* ============================================================
    NMDP — Funciones de renderizado

@@ -754,6 +754,7 @@ var API='https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDx
 var MESES_ORD=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 var mLabel=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var ESPECIALISTAS=['BERENICE DOMINGUEZ','CRISTIAN CAMARILLO','DANIEL BARAJAS','JOANA GOMEZ','RAFAEL MARTINEZ','RICARDO MICHACA'];
+var EXCLUIR_DESEMPENO=['OSCAR ALDAY','JOSELYNE CONTRERAS'];
 var PLATAFORMA_A_COMPANIA={'TECNOMETRICS':'TECNOCONTROL','UTRAX':'TECNOCONTROL','RECUPERAMOVIL':'SMARTTRACKER','EASYTRACK':'EASYTRACK','INBURSA':'INBURSA'};
 var COMPANIAS_DISPLAY=[{nombre:'TECNOCONTROL',icono:'🛰️',meta:90},{nombre:'SMARTTRACKER',icono:'📡',meta:90},{nombre:'EASYTRACK',icono:'🗺️',meta:90},{nombre:'INBURSA',icono:'🏦',meta:90}];
 var INTERVALOS=['- 30 MINUTOS','30 MINUTOS - 1 HR','1-3 HRS.','3-12 HRS.','12 HRS - 1 DÍA.','> 1 DÍA','> 2 DÍAS','1 SEMANA O MÁS'];
@@ -765,6 +766,101 @@ var actividadesData=[],solicitudesData=[],conectividadData={};
 var frtFallbackMap={},frtFallbackGlobal=0;
 var zohoHistorial={},conectividadHistorial={};
 var zohoRetryTimer=null,currentPage='resumen';
+
+/* ── CACHÉ ZOHO (localStorage, TTL 24 horas) ──────────────────────────
+   Clave: zoho_cache_<MES>
+   Valor: { ts: timestamp_ms, avg: minutos_promedio, agentes: [...], cerrado: bool }
+
+   Reglas:
+   · Mes actual  → TTL 8h (se refresca ~3 veces al día). Al cruzar al día 1
+                   pasa a "cerrado" y su caché se vuelve permanente.
+   · Meses pasados (cerrados) → nunca expiran.
+   · MES_ACTUAL se recalcula en cada llamada para sobrevivir cambios de día.
+──────────────────────────────────────────────────────────────────────── */
+var ZOHO_TTL_MS = 8 * 60 * 60 * 1000; // 8 horas en ms
+
+// ⚠️ Siempre recalcular — no cachear en variable fija
+function getMesActualFrontend(){
+  return MESES_ORD[new Date().getMonth()];
+}
+
+// Un mes está cerrado si su índice es menor al mes actual
+function mesCerradoFrontend(mes){
+  var idx = MESES_ORD.indexOf(mes.toUpperCase().trim());
+  return idx >= 0 && idx < new Date().getMonth();
+}
+
+function zohoCacheKey(mes){ return 'zoho_cache_' + mes.toUpperCase(); }
+
+function zohoCacheGet(mes){
+  try{
+    var raw = localStorage.getItem(zohoCacheKey(mes));
+    if(!raw) return null;
+    var obj = JSON.parse(raw);
+    // Si el mes ya cerró (o estaba marcado como cerrado en la caché), nunca expira
+    if(mesCerradoFrontend(mes) || obj.cerrado) return obj;
+    // Mes actual: respetar TTL de 24h
+    var expired = (Date.now() - (obj.ts||0)) > ZOHO_TTL_MS;
+    if(expired) return null;
+    return obj;
+  }catch(e){ return null; }
+}
+
+function zohoCacheSet(mes, avg, agentes, totalTickets){
+  try{
+    localStorage.setItem(zohoCacheKey(mes), JSON.stringify({
+      ts:           Date.now(),
+      avg:          avg,
+      agentes:      agentes,
+      totalTickets: totalTickets||0,
+      cerrado:      mesCerradoFrontend(mes)
+    }));
+  }catch(e){}
+}
+
+// Invalida solo el mes actual (útil si quieres forzar refresh manual)
+function zohoCacheInvalidateMesActual(){
+  try{ localStorage.removeItem(zohoCacheKey(getMesActualFrontend())); }catch(e){}
+}
+
+/* Merge de datos delta sobre caché existente.
+   Suma tickets y minutos por agente, recalcula avgMin. */
+function zohoMerge(cacheActual, delta){
+  var agentes = {};
+  // Cargar base
+  (cacheActual.agentes||[]).forEach(function(a){
+    agentes[a.nombre] = {
+      tickets:      a.tickets||0,
+      count:        a.count||0,
+      totalMinutes: a.totalMinutes||0
+    };
+  });
+  // Sumar delta
+  (delta||[]).forEach(function(a){
+    if(!agentes[a.nombre]) agentes[a.nombre]={tickets:0,count:0,totalMinutes:0};
+    agentes[a.nombre].tickets      += a.tickets||0;
+    agentes[a.nombre].count        += a.count||0;
+    agentes[a.nombre].totalMinutes += a.totalMinutes||0;
+  });
+  // Reconstruir array
+  return Object.keys(agentes).map(function(n){
+    var d=agentes[n];
+    return{
+      nombre:       n,
+      tickets:      d.tickets,
+      count:        d.count,
+      totalMinutes: d.totalMinutes,
+      avgMin:       d.count>0?d.totalMinutes/d.count:0
+    };
+  }).sort(function(a,b){return b.tickets-a.tickets;});
+}
+
+/* Calcular avg global desde array de agentes */
+function zohoAvgFromAgentes(agentes){
+  var tMin=agentes.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
+  var tCnt=agentes.reduce(function(s,a){return s+(a.count||0);},0);
+  return tCnt>0?tMin/tCnt:0;
+}
 var CUATRIMESTRES=[
   {id:'C1',label:'C1 · Ene–Abr',meses:['ENERO','FEBRERO','MARZO','ABRIL']},
   {id:'C2',label:'C2 · May–Ago',meses:['MAYO','JUNIO','JULIO','AGOSTO']},
@@ -805,7 +901,7 @@ function onPageMesChange(page){
   if(page==='men'){zohoAgentes=[];if(zohoRetryTimer){clearTimeout(zohoRetryTimer);zohoRetryTimer=null;}renderMensual(mes);}
   if(page==='rec')renderRecuperaciones(mes);
   if(page==='srv')renderServicio(mes);
-  if(page==='des'){zohoAgentes=[];loadZohoAgentes(mes||MESES_ORD[now.getMonth()]);renderSolicitudes();}
+  if(page==='des'){zohoAgentes=[];loadZohoAgentes(mes||getMesActualFrontend());renderSolicitudes();}
 }
 
 function buildCuatriTabs(){
@@ -830,14 +926,26 @@ function updateMesHeaders(meses){
 async function loadZohoHistorial(){
   var mesesDisp=[...new Set(recData.map(function(r){return r.mes;}).concat(robosData.map(function(r){return r.mes;})).concat(CUATRIMESTRES.reduce(function(a,c){return a.concat(c.meses);},[])))].filter(Boolean);
   await Promise.all(mesesDisp.map(async function(m){
-    if(zohoHistorial[m]!==undefined)return;
+    // Si ya está en memoria, no hacer nada
+    if(zohoHistorial[m]!==undefined) return;
+    // Intentar desde localStorage
+    var cached = zohoCacheGet(m);
+    if(cached && cached.avg !== undefined){
+      zohoHistorial[m] = cached.avg;
+      return;
+    }
+    // Fetch solo si no hay caché válida
     try{
       var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(m)).then(function(r){return r.json();});
       if(json.error)return;
       var ag=json.data||[];
       var tMin=ag.reduce(function(s,a){return s+(parseFloat(a.totalMinutes)||0);},0);
       var tCnt=ag.reduce(function(s,a){return s+(parseFloat(a.count)||parseFloat(a.tickets)||0);},0);
-      if(tCnt>0)zohoHistorial[m]=tMin/tCnt;
+      if(tCnt>0){
+        var avg=tMin/tCnt;
+        zohoHistorial[m]=avg;
+        zohoCacheSet(m, avg, ag);
+      }
     }catch(e){}
   }));
 }
@@ -884,7 +992,7 @@ function renderPage(p){
   if(p==='mensual')renderMensual(getPageMes('men'));
   if(p==='recuperaciones')renderRecuperaciones(getPageMes('rec'));
   if(p==='servicio')renderServicio(getPageMes('srv'));
-  if(p==='desempeno'){var m=getPageMes('des');if(!zohoAgentes.length)loadZohoAgentes(m||MESES_ORD[now.getMonth()]);else renderDesempeno(m);renderSolicitudes();}
+  if(p==='desempeno'){var m=getPageMes('des');if(!zohoAgentes.length)loadZohoAgentes(m||getMesActualFrontend());else renderDesempeno(m);renderSolicitudes();}
   if(p==='pendientes')renderPendientes();
   if(p==='nmdp')renderNMDP();
 }
@@ -985,16 +1093,34 @@ async function loadAll(){
     activeCuatri=getCuatriActual();
     buildCuatriTabs();
     loadHistoricos();loadActividades();
-    var mesActual=getPageMes('men')||MESES_ORD[now.getMonth()];
+    var mesActual=getPageMes('men')||getMesActualFrontend();
     await loadFrtFallback(mesActual);
     await loadZohoHistorial();
-    await new Promise(function(resolve){
-      fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesActual)).then(function(r){return r.json();}).then(function(json){
-        if(!json.error){var ag=json.data||[];var tMin=ag.reduce(function(s,a){return s+(parseFloat(a.totalMinutes)||0);},0);var tCnt=ag.reduce(function(s,a){return s+(parseFloat(a.count)||parseFloat(a.tickets)||0);},0);if(tCnt>0)zohoHistorial[mesActual]=tMin/tCnt;zohoAgentes=ag;}
-        resolve();
-      }).catch(resolve);
-    });
-    dot.className='dot ok';stxt.textContent='✅ Datos cargados · '+new Date().toLocaleTimeString('es-MX');
+    // Mes actual: usar caché si existe y es válida (TTL 24h), si no hacer fetch
+    var cachedActual=zohoCacheGet(mesActual);
+    if(cachedActual && cachedActual.agentes && cachedActual.agentes.length){
+      zohoAgentes=cachedActual.agentes;
+      if(cachedActual.avg) zohoHistorial[mesActual]=cachedActual.avg;
+      var horasAtras=Math.round((Date.now()-(cachedActual.ts||0))/3600000);
+      dot.className='dot ok';
+      stxt.textContent='✅ Datos cargados · Tickets desde caché ('+(horasAtras===0?'hace menos de 1h':'hace ~'+horasAtras+'h')+')';
+    } else {
+      await new Promise(function(resolve){
+        fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesActual)).then(function(r){return r.json();}).then(function(json){
+          if(!json.error){
+            var ag=json.data||[];
+            var tMin=ag.reduce(function(s,a){return s+(parseFloat(a.totalMinutes)||0);},0);
+            var tCnt=ag.reduce(function(s,a){return s+(parseFloat(a.count)||parseFloat(a.tickets)||0);},0);
+            var avg=tCnt>0?tMin/tCnt:0;
+            if(avg) zohoHistorial[mesActual]=avg;
+            zohoAgentes=ag;
+            zohoCacheSet(mesActual, avg||undefined, ag);
+          }
+          resolve();
+        }).catch(resolve);
+      });
+      dot.className='dot ok';stxt.textContent='✅ Datos cargados · '+new Date().toLocaleTimeString('es-MX');
+    }
     render();
   }catch(e){dot.className='dot err';stxt.textContent='❌ '+e.message;}
   btn.disabled=false;btn.textContent='🔄 Actualizar';
@@ -1002,10 +1128,19 @@ async function loadAll(){
 
 async function loadFrtFallback(mesActual){
   var idx=MESES_ORD.indexOf(mesActual);if(idx<=0)return;
+  var mesPrev=MESES_ORD[idx-1];
   try{
-    var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(MESES_ORD[idx-1])).then(function(r){return r.json();});
-    if(json.error)return;
-    var fb=json.data||[];frtFallbackMap={};
+    var cached=zohoCacheGet(mesPrev);
+    var fb=cached && cached.agentes ? cached.agentes : null;
+    if(!fb){
+      var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesPrev)).then(function(r){return r.json();});
+      if(json.error)return;
+      fb=json.data||[];
+      var tMin=fb.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
+      var tCnt=fb.reduce(function(s,a){return s+(a.count||0);},0);
+      zohoCacheSet(mesPrev, tCnt>0?tMin/tCnt:undefined, fb);
+    }
+    frtFallbackMap={};
     fb.forEach(function(a){if(a.count>0)frtFallbackMap[a.nombre]=(a.totalMinutes||0)/a.count;});
     var fbMin=fb.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
     var fbCnt=fb.reduce(function(s,a){return s+(a.count||0);},0);
@@ -1027,10 +1162,10 @@ function getConPctMes(key,mes){
   });
   return found;
 }
-function getConPct(key){return getConPctMes(key,getPageMes('men')||MESES_ORD[now.getMonth()]);}
+function getConPct(key){return getConPctMes(key,getPageMes('men')||getMesActualFrontend());}
 
 function renderConectividad(mes){
-  var META=85;mes=mes||getPageMes('men')||MESES_ORD[now.getMonth()];
+  var META=85;mes=mes||getPageMes('men')||getMesActualFrontend();
   var subKeys=['legacy','s1','s2','s3','bafar','recuperamovil'];
   var platVals=subKeys.map(function(k){return getConPctMes(k,mes);}).filter(function(v){return v!==null;});
   var pctMes=conectividadHistorial[mes]!==undefined?conectividadHistorial[mes]:null;
@@ -1222,7 +1357,7 @@ function renderRecuperaciones(mes){
 }
 
 function renderServicio(mes){
-  var mesKey=mes||MESES_ORD[now.getMonth()];
+  var mesKey=mes||getMesActualFrontend();
   var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
   if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);document.getElementById('srv-capac').textContent=avg.toFixed(1)+'%';}
   else document.getElementById('srv-capac').textContent='—';
@@ -1235,20 +1370,83 @@ function renderGraficaCapac(mes){
   buildNcChart({containerId:'nc-capac',title:'📚 Satisfacción de Capacitaciones',data:rows.map(function(r){return{label:r.mes.charAt(0)+r.mes.slice(1,3).toLowerCase(),primary:r.total,pct:r.calif,_mes:r.mes};}),labelP:'Total capacitaciones',singleBar:true,activeMes:mes});
 }
 
+function zohoAvgFromAgentes(agentes){
+  var tMin=agentes.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
+  var tCnt=agentes.reduce(function(s,a){return s+(a.count||0);},0);
+  return tCnt>0?tMin/tCnt:0;
+}
+
+function zohoMerge(cached, nuevosAgentes){
+  // Partir de los agentes que ya teníamos en caché
+  var base={};
+  (cached.agentes||[]).forEach(function(a){
+    base[a.nombre]={tickets:a.tickets,count:a.count,totalMinutes:a.totalMinutes};
+  });
+  // Sumar los nuevos
+  nuevosAgentes.forEach(function(a){
+    if(!base[a.nombre]) base[a.nombre]={tickets:0,count:0,totalMinutes:0};
+    base[a.nombre].tickets      += a.tickets;
+    base[a.nombre].count        += a.count;
+    base[a.nombre].totalMinutes += a.totalMinutes;
+  });
+  return Object.keys(base).map(function(n){
+    var d=base[n];
+    return{nombre:n,tickets:d.tickets,count:d.count,totalMinutes:d.totalMinutes,
+           avgMin:d.count>0?d.totalMinutes/d.count:0};
+  }).sort(function(a,b){return b.tickets-a.tickets;});
+}
+
 async function loadZohoAgentes(mes){
-  var mesKey=mes||MESES_ORD[now.getMonth()];
-  document.getElementById('srv-agentes-body').innerHTML='<tr class="loading-row"><td colspan="5">⏳ Cargando agentes...</td></tr>';
-  document.getElementById('srv-total').textContent='—';document.getElementById('srv-frt').textContent='—';
+  var mesKey=mes||getMesActualFrontend();
+  var esMesActual=!mesCerradoFrontend(mesKey);
+  var body=document.getElementById('srv-agentes-body');
+  if(body) body.innerHTML='<tr class="loading-row"><td colspan="5">⏳ Cargando agentes...</td></tr>';
+  var stot=document.getElementById('srv-total'),sfrt=document.getElementById('srv-frt');
+  if(stot) stot.textContent='—'; if(sfrt) sfrt.textContent='—';
   try{
-    var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
-    if(json.error)throw new Error(json.error);
-    zohoAgentes=json.data||[];
-    var tMin=zohoAgentes.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
-    var tCnt=zohoAgentes.reduce(function(s,a){return s+(a.count||0);},0);
-    if(tCnt>0)zohoHistorial[mesKey]=tMin/tCnt;
+    var cached=zohoCacheGet(mesKey);
+    if(mesCerradoFrontend(mesKey)){
+      // Mes cerrado: usar caché permanente, sin fetch
+      if(cached && cached.agentes && cached.agentes.length){
+        zohoAgentes=cached.agentes;
+        if(cached.avg) zohoHistorial[mesKey]=cached.avg;
+      } else {
+        var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
+        if(json.error) throw new Error(json.error);
+        zohoAgentes=json.data||[];
+        var avg=zohoAvgFromAgentes(zohoAgentes);
+        if(avg) zohoHistorial[mesKey]=avg;
+        zohoCacheSet(mesKey,avg||undefined,zohoAgentes);
+      }
+    } else if(!cached || !cached.agentes || !cached.agentes.length){
+      // Mes actual sin caché → fetch completo
+      var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
+      if(json.error) throw new Error(json.error);
+      zohoAgentes=json.data||[];
+      var avg=zohoAvgFromAgentes(zohoAgentes);
+      if(avg) zohoHistorial[mesKey]=avg;
+      zohoCacheSet(mesKey,avg||undefined,zohoAgentes);
+    } else {
+      // Mes actual con caché válida → fetch incremental con parámetro "desde"
+      var desdeISO=new Date(cached.ts).toISOString();
+      var url=API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)+'&desde='+encodeURIComponent(desdeISO);
+      var jsonD=await fetch(url).then(function(r){return r.json();});
+      if(!jsonD.error && jsonD.data && jsonD.data.length && jsonD.fuente==='incremental'){
+        // El backend ya hizo el merge y devuelve el resultado completo
+        zohoAgentes=jsonD.data;
+        var avg=zohoAvgFromAgentes(zohoAgentes);
+        if(avg) zohoHistorial[mesKey]=avg;
+        zohoCacheSet(mesKey,avg||undefined,zohoAgentes);
+      } else {
+        // Sin tickets nuevos o caché fresca → usar lo que ya tenemos
+        zohoAgentes=cached.agentes;
+        if(cached.avg) zohoHistorial[mesKey]=cached.avg;
+        zohoCacheSet(mesKey,cached.avg,cached.agentes); // renovar TTL
+      }
+    }
     renderAgentesZoho();renderDesempeno(mes);
     if(currentPage==='resumen')renderResumen();
-  }catch(e){document.getElementById('srv-agentes-body').innerHTML='<tr class="loading-row"><td colspan="5">⚠️ '+e.message+'</td></tr>';}
+  }catch(e){if(body)body.innerHTML='<tr class="loading-row"><td colspan="5">⚠️ '+e.message+'</td></tr>';}
 }
 
 function renderAgentesZoho(){
@@ -1277,20 +1475,55 @@ function renderAgentesZoho(){
 }
 
 async function loadZohoTickets(mes){
-  var mesKey=mes||MESES_ORD[now.getMonth()];
-  document.getElementById('d-tickets').textContent='⏳ Consultando Zoho...';
+  var mesKey=mes||getMesActualFrontend();
+  var dt=document.getElementById('d-tickets');
   try{
-    var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
-    if(json.error)throw new Error(json.error);
-    var agentes=json.data||[];
+    var agentes;
+    var cached=zohoCacheGet(mesKey);
+    if(mesCerradoFrontend(mesKey)){
+      // Mes cerrado: usar caché permanente
+      if(cached && cached.agentes && cached.agentes.length){
+        agentes=cached.agentes;
+        if(cached.avg) zohoHistorial[mesKey]=cached.avg;
+      } else {
+        if(dt) dt.textContent='⏳ Consultando Zoho...';
+        var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
+        if(json.error) throw new Error(json.error);
+        agentes=json.data||[];
+        var avg=zohoAvgFromAgentes(agentes);
+        if(avg) zohoHistorial[mesKey]=avg;
+        zohoCacheSet(mesKey,avg||undefined,agentes);
+      }
+    } else if(!cached || !cached.agentes || !cached.agentes.length){
+      // Mes actual sin caché → fetch completo
+      if(dt) dt.textContent='⏳ Consultando Zoho...';
+      var json=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
+      if(json.error) throw new Error(json.error);
+      agentes=json.data||[];
+      var avg=zohoAvgFromAgentes(agentes);
+      if(avg) zohoHistorial[mesKey]=avg;
+      zohoCacheSet(mesKey,avg||undefined,agentes);
+    } else {
+      // Mes actual con caché válida → incremental
+      var desdeISO=new Date(cached.ts).toISOString();
+      var url=API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)+'&desde='+encodeURIComponent(desdeISO);
+      var jsonD=await fetch(url).then(function(r){return r.json();});
+      if(!jsonD.error && jsonD.data && jsonD.data.length && jsonD.fuente==='incremental'){
+        agentes=jsonD.data; // backend ya hizo el merge
+        var avg=zohoAvgFromAgentes(agentes);
+        if(avg) zohoHistorial[mesKey]=avg;
+        zohoCacheSet(mesKey,avg||undefined,agentes);
+      } else {
+        agentes=cached.agentes;
+        if(cached.avg) zohoHistorial[mesKey]=cached.avg;
+        zohoCacheSet(mesKey,cached.avg,cached.agentes); // renovar TTL
+      }
+    }
     var totalTickets=agentes.reduce(function(s,a){return s+a.tickets;},0);
     var avgMin=getGlobalFrt(agentes);
-    var tMin2=agentes.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
-    var tCnt2=agentes.reduce(function(s,a){return s+(a.count||0);},0);
-    if(tCnt2>0)zohoHistorial[mesKey]=tMin2/tCnt2;
     if(!totalTickets&&!avgMin){resetKPI('tickets');return;}
     var meta=15,pct=avgMin>0?Math.min((meta/avgMin)*100,100):0,good=avgMin>0&&avgMin<=meta,label=avgMin>0?fmtMin(avgMin):'—';
-    var vt=document.getElementById('v-tickets'),dt=document.getElementById('d-tickets'),pbt=document.getElementById('pb-tickets'),bt=document.getElementById('b-tickets'),ct=document.getElementById('c-tickets');
+    var vt=document.getElementById('v-tickets'),pbt=document.getElementById('pb-tickets'),bt=document.getElementById('b-tickets'),ct=document.getElementById('c-tickets');
     if(vt)vt.textContent=label;
     if(dt)dt.textContent='Total: '+totalTickets+' tickets';
     if(pbt){pbt.style.width=pct+'%';pbt.style.background=good?'#0f6e56':'#a32d2d';}
@@ -1301,15 +1534,14 @@ async function loadZohoTickets(mes){
     if(stot)stot.textContent=totalTickets||'—';
     if(!zohoAgentes.length){zohoAgentes=agentes;renderAgentesZoho();renderDesempeno(mes);}
     if(currentPage==='resumen')renderResumen();
-  }catch(e){document.getElementById('d-tickets').textContent='⚠️ '+e.message;resetKPI('tickets');}
+  }catch(e){if(dt)dt.textContent='⚠️ '+e.message;resetKPI('tickets');}
 }
 
 function renderDesempeno(mes){
-  var mesKey=mes||MESES_ORD[now.getMonth()];
+  var mesKey=mes||getMesActualFrontend();
   var filas=(mesKey?robosData.filter(function(r){return r.mes===mesKey;}):robosData).filter(function(r){return r.ticketZoho==='SI'||r.ticketZoho==='NO';});
   var totalTickets=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
 
-  // Helpers
   function getInitials(n){var p=n.trim().split(' ');return(p[0]?p[0][0]:'')+(p[1]?p[1][0]:'');}
   function avatarColor(i){var c=[['#e6f1fb','#185fa5'],['#eaf3de','#3b6d11'],['#faeeda','#854f0b'],['#fcebeb','#a32d2d'],['#f5f3ff','#7c3aed']];return c[i%c.length];}
   function medal(i){return i===0?'🥇':i===1?'🥈':i===2?'🥉':'<span style="color:#94a3b8">'+(i+1)+'</span>';}
@@ -1317,20 +1549,35 @@ function renderDesempeno(mes){
   function pctColor(p){return p>=90?'#0f6e56':p>=60?'#854f0b':'#a32d2d';}
   function timeColor(min){return min>0&&min<=15?'#0f6e56':'#a32d2d';}
   function scorePillHtml(score,color,bg){return'<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:.65rem;font-weight:700;background:'+bg+';color:'+color+'">'+score.toFixed(1)+'</span>';}
+  // Normalizar nombre para comparación — elimina espacios extra y pasa a mayúsculas
+  function norm(n){return String(n||'').toUpperCase().trim().replace(/\s+/g,' ');}
 
   // ── MONITORISTAS ──
+  // Fuente 1: recuperaciones (robosData)
   var porAgenteM={};
-  filas.forEach(function(r){var a=r.monitorista||'Sin asignar';if(ESPECIALISTAS.includes(a.toUpperCase().trim()))return;if(!porAgenteM[a])porAgenteM[a]={total:0,rec:0};porAgenteM[a].total++;if(r.recuperado==='si')porAgenteM[a].rec++;});
-  var monZoho=zohoAgentes.filter(function(a){return!ESPECIALISTAS.includes(a.nombre.toUpperCase().trim());});
+  filas.forEach(function(r){
+    var a=norm(r.monitorista||'Sin asignar');
+    if(ESPECIALISTAS.includes(a))return;
+    if(EXCLUIR_DESEMPENO.includes(a))return;
+    if(!porAgenteM[a])porAgenteM[a]={nombre:r.monitorista||'Sin asignar',total:0,rec:0};
+    porAgenteM[a].total++;
+    if(r.recuperado==='si')porAgenteM[a].rec++;
+  });
+  // Fuente 2: tickets Zoho — incluir TODOS los monitoristas aunque no tengan recuperaciones
+  var monZoho=zohoAgentes.filter(function(a){return!ESPECIALISTAS.includes(norm(a.nombre))&&!EXCLUIR_DESEMPENO.includes(norm(a.nombre));});
+  monZoho.forEach(function(a){
+    var k=norm(a.nombre);
+    if(!porAgenteM[k])porAgenteM[k]={nombre:a.nombre,total:0,rec:0};
+  });
 
-  var monRows=Object.keys(porAgenteM).map(function(nombre){
-    var d=porAgenteM[nombre];
+  var monRows=Object.keys(porAgenteM).map(function(k){
+    var d=porAgenteM[k];
+    var zoho=monZoho.find(function(a){return norm(a.nombre)===k;})||{tickets:0,count:0,totalMinutes:0};
     var pctEf=d.total>0?(d.rec/d.total*100):0;
-    var zoho=monZoho.find(function(a){return a.nombre.toUpperCase().trim()===nombre.toUpperCase().trim();})||{tickets:0,count:0,totalMinutes:0};
     var pctTick=totalTickets>0?((zoho.tickets/totalTickets)*100):0;
     var score=(pctEf*0.5)+(pctTick*0.5);
     var avgMin=getFrt(zoho);
-    return{nombre:nombre,total:d.total,rec:d.rec,noRec:d.total-d.rec,pctEf:pctEf,tickets:zoho.tickets,pctTick:pctTick,avgMin:avgMin,score:score};
+    return{nombre:d.nombre,total:d.total,rec:d.rec,noRec:d.total-d.rec,pctEf:pctEf,tickets:zoho.tickets,pctTick:pctTick,avgMin:avgMin,score:score};
   }).sort(function(a,b){return b.score-a.score;});
 
   var mbody=document.getElementById('des-monitoristas-body');
@@ -1351,21 +1598,32 @@ function renderDesempeno(mes){
   }).join(''):'<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:28px">Sin datos para este período</td></tr>';
 
   // ── ESPECIALISTAS ──
+  // Fuente 1: recuperaciones
   var porAgenteE={};
-  filas.forEach(function(r){var a=r.monitorista||'Sin asignar';if(!ESPECIALISTAS.includes(a.toUpperCase().trim()))return;if(!porAgenteE[a])porAgenteE[a]={total:0,rec:0};porAgenteE[a].total++;if(r.recuperado==='si')porAgenteE[a].rec++;});
-  var espZoho=zohoAgentes.filter(function(a){return ESPECIALISTAS.includes(a.nombre.toUpperCase().trim());});
+  filas.forEach(function(r){
+    var a=norm(r.monitorista||'Sin asignar');
+    if(!ESPECIALISTAS.includes(a))return;
+    if(EXCLUIR_DESEMPENO.includes(a))return;
+    if(!porAgenteE[a])porAgenteE[a]={nombre:r.monitorista||'Sin asignar',total:0,rec:0};
+    porAgenteE[a].total++;
+    if(r.recuperado==='si')porAgenteE[a].rec++;
+  });
+  // Fuente 2: tickets Zoho — incluir TODOS los especialistas aunque no tengan recuperaciones
+  var espZoho=zohoAgentes.filter(function(a){return ESPECIALISTAS.includes(norm(a.nombre))&&!EXCLUIR_DESEMPENO.includes(norm(a.nombre));});
+  espZoho.forEach(function(a){
+    var k=norm(a.nombre);
+    if(!porAgenteE[k])porAgenteE[k]={nombre:a.nombre,total:0,rec:0};
+  });
 
-  // Merge nombres de ambas fuentes
-  var espNombres=[...new Set([...Object.keys(porAgenteE),...espZoho.map(function(a){return a.nombre;})])];
-  var espRows=espNombres.map(function(nombre){
-    var d=porAgenteE[nombre]||{total:0,rec:0};
-    var zoho=espZoho.find(function(a){return a.nombre.toUpperCase().trim()===nombre.toUpperCase().trim();})||{tickets:0,count:0,totalMinutes:0};
+  // Un solo set de nombres normalizados — sin duplicados
+  var espRows=Object.keys(porAgenteE).map(function(k){
+    var d=porAgenteE[k];
+    var zoho=espZoho.find(function(a){return norm(a.nombre)===k;})||{tickets:0,count:0,totalMinutes:0};
     var pctEf=d.total>0?(d.rec/d.total*100):null;
     var pctTick=totalTickets>0?((zoho.tickets/totalTickets)*100):0;
     var avgMin=getFrt(zoho);
-    // Score especialistas: tickets / tiempo_prom(min)
     var score=avgMin>0?(zoho.tickets/avgMin):0;
-    return{nombre:nombre,total:d.total,rec:d.rec,noRec:d.total-d.rec,pctEf:pctEf,tickets:zoho.tickets,pctTick:pctTick,avgMin:avgMin,score:score};
+    return{nombre:d.nombre,total:d.total,rec:d.rec,noRec:d.total-d.rec,pctEf:pctEf,tickets:zoho.tickets,pctTick:pctTick,avgMin:avgMin,score:score};
   }).sort(function(a,b){return b.score-a.score;});
 
   var ebody=document.getElementById('des-especialistas-body');

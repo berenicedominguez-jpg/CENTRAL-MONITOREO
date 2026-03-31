@@ -1250,9 +1250,40 @@ async function renderResumen(){
       }
       var ok=d.cumple===true;
       var dispVal=k.tipo==='tiempo'?fmtMin(d.val):d.val.toFixed(1)+'%';
+
+      // ── Detalle adicional por tipo de KPI ──
+      var detalleHtml='';
+      if(k.id==='tickets'){
+        // Total tickets del mes desde zohoHistorial
+        var totalTk=zohoAgentes.length?zohoAgentes.reduce(function(s,a){return s+a.tickets;},0):0;
+        if(totalTk>0) detalleHtml='<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)">'+totalTk+' tickets</span></div>';
+      } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
+        var kw=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
+        var rowsMes=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw);});
+        var rec=rowsMes.reduce(function(s,r){return s+r.recup;},0);
+        var noRec=rowsMes.reduce(function(s,r){return s+r.noRec;},0);
+        var total=rec+noRec;
+        if(total>0){
+          detalleHtml='<div style="margin-top:3px">'
+            +'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#EAF3DE;color:#3B6D11;margin-right:2px">'+rec+' rec.</span>'
+            +(noRec>0?'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#FCEBEB;color:#A32D2D">'+noRec+' no rec.</span>':'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)">0 no rec.</span>')
+            +'</div>'
+            +'<div style="font-size:10px;color:var(--color-text-secondary);margin-top:1px">'+total+' casos totales</div>';
+        }
+      } else if(k.id==='capac'){
+        var srvMes=srvData.filter(function(r){return r.mes===m;});
+        var totEnc=srvMes.reduce(function(s,r){return s+r.total;},0);
+        if(totEnc>0) detalleHtml='<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)">'+totEnc+' encuestas</span></div>';
+      } else if(k.id==='conectividad'){
+        var subKeys=['legacy','s1','s2','s3','bafar','recuperamovil'];
+        var platValsM=subKeys.map(function(sk){return getConPctMes(sk,m);}).filter(function(v){return v!==null;});
+        if(platValsM.length>0) detalleHtml='<div style="font-size:10px;color:var(--color-text-secondary);margin-top:3px">Promedio '+platValsM.length+' plataformas</div>';
+      }
+
       return'<td class="kn-mes-cell">'
         +'<div class="kn-mes-val"><span class="kn-dot '+(ok?'ok':'fail')+'"></span>'+dispVal+'</div>'
         +'<span class="kn-badge '+(ok?'ok':'fail')+'">'+(ok?'✓ OK':'✗ Fuera de objetivo')+'</span>'
+        +detalleHtml
         +'</td>';
     }).join('');
 

@@ -1539,7 +1539,7 @@ async function loadZohoTickets(mes){
 
 function renderDesempeno(mes){
   var mesKey=mes||getMesActualFrontend();
-  var filas=(mesKey?robosData.filter(function(r){return r.mes===mesKey;}):robosData).filter(function(r){return r.ticketZoho==='SI'||r.ticketZoho==='NO';});
+  var filas=mesKey?robosData.filter(function(r){return r.mes===mesKey;}):robosData;
   var totalTickets=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
 
   function getInitials(n){var p=n.trim().split(' ');return(p[0]?p[0][0]:'')+(p[1]?p[1][0]:'');}

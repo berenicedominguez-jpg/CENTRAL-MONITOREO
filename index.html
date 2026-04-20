@@ -700,6 +700,15 @@
             <div id="nmdp-exp-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
           </div>
         </div>
+        <div class="fin-kpi" style="border-bottom-color:#d97706;text-align:center">
+          <span class="fin-kpi-icon">⏳</span>
+          <div class="fin-kpi-label">Rezagados</div>
+          <div class="fin-kpi-val" style="color:#d97706" id="nmdp-exp-rezagados">—</div>
+          <div class="fin-kpi-sub" id="nmdp-exp-rezagados-pct">— del total</div>
+          <div style="margin-top:10px;background:#e8eef5;border-radius:99px;height:6px;overflow:hidden">
+            <div id="nmdp-exp-rezagados-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#d97706,#fbbf24);width:0%;transition:width 1s ease"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Cuerpo: tabla financiera -->
@@ -761,7 +770,7 @@ var INTERVALOS=['- 30 MINUTOS','30 MINUTOS - 1 HR','1-3 HRS.','3-12 HRS.','12 HR
 var CON_MAP={'general':['GENERAL','CONECTIVIDAD GENERAL'],'legacy':['LEGACY'],'s1':['S1'],'s2':['S2'],'s3':['S3'],'bafar':['BAFAR'],'recuperamovil':['RECUPERAMOVIL']};
 var CHART_H=200;
 var now=new Date();
-var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={};
+var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={},rezagadosData=[];
 var actividadesData=[],solicitudesData=[],conectividadData={};
 var frtFallbackMap={},frtFallbackGlobal=0;
 var zohoHistorial={},zohoHistorialTotal={},conectividadHistorial={};
@@ -1042,6 +1051,7 @@ async function loadAll(){
     // Parsear NMDP + Expedientes (misma hoja)
     if(j5&&!j5.error){
       expedientesData={total:0,online:0,offline:0};
+      rezagadosData=[];
       nmdpData=(j5.rows||[]).map(function(r){
         var keys=Object.keys(r);
         var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
@@ -1056,12 +1066,21 @@ async function loadAll(){
         var kTotal=keys.find(function(k){return k.toLowerCase().trim()==='total';});
         var kOnline=keys.find(function(k){return k.toLowerCase().trim()==='online';});
         var kOffline=keys.find(function(k){return k.toLowerCase().trim()==='offline';});
+        var kRezMes=keys.find(function(k){return k.toLowerCase().trim()==='rezagados';});
+        var kRezVal=keys.find(function(k){return k.toLowerCase().trim()==='total_rezagados';});
         var mes=kMes?String(r[kMes]||'').trim():'';
         if(!mes)return null;
         // Acumular expedientes de todas las filas
         expedientesData.total+=parseFloat(r[kTotal]||0)||0;
         expedientesData.online+=parseFloat(r[kOnline]||0)||0;
         expedientesData.offline+=parseFloat(r[kOffline]||0)||0;
+        // Parsear columnas L-M (rezagados históricos) si existen en esta fila
+        if(kRezMes&&kRezVal&&r[kRezMes]&&String(r[kRezMes]).trim()){
+          rezagadosData.push({
+            label:String(r[kRezMes]).trim().toUpperCase(),
+            valor:parseFloat(r[kRezVal]||0)||0
+          });
+        }
         return{
           mes:mes,
           recQty:parseFloat(r[kRecQty]||0)||0,
@@ -1879,29 +1898,42 @@ function renderExpedientes(){
   var filtroMes=sel?sel.value:'';
   var d;
   if(filtroMes){
-    // Usar datos del mes seleccionado
     var row=nmdpData.find(function(r){return r.mes===filtroMes;});
     d=row?{total:row.expTotal,online:row.expOnline,offline:row.expOffline}:{total:0,online:0,offline:0};
   } else {
-    // Acumulado total
     d=expedientesData;
+  }
+  // Buscar rezagados: match por nombre de mes (ej. "MARZO 2026" contiene "MARZO")
+  var rezagados=0;
+  if(filtroMes){
+    var mesKey=filtroMes.toUpperCase().trim();
+    var matchRez=rezagadosData.find(function(r){return r.label.indexOf(mesKey)!==-1||mesKey.indexOf(r.label.split(' ')[0])!==-1;});
+    rezagados=matchRez?matchRez.valor:0;
+  } else {
+    rezagados=rezagadosData.reduce(function(s,r){return s+r.valor;},0);
   }
   var total=d.total||0,online=d.online||0,offline=d.offline||0;
   var elT=document.getElementById('nmdp-exp-total');
   var elOn=document.getElementById('nmdp-exp-online');
   var elOff=document.getElementById('nmdp-exp-offline');
+  var elRez=document.getElementById('nmdp-exp-rezagados');
   var elOnP=document.getElementById('nmdp-exp-online-pct');
   var elOffP=document.getElementById('nmdp-exp-offline-pct');
+  var elRezP=document.getElementById('nmdp-exp-rezagados-pct');
   var elOnBar=document.getElementById('nmdp-exp-online-bar');
   var elOffBar=document.getElementById('nmdp-exp-offline-bar');
+  var elRezBar=document.getElementById('nmdp-exp-rezagados-bar');
   if(elT)elT.textContent=total||'—';
   if(elOn)elOn.textContent=online||'—';
   if(elOff)elOff.textContent=offline||'—';
+  if(elRez)elRez.textContent=rezagados||'—';
   if(elOnP)elOnP.textContent=total>0?(((online/total)*100).toFixed(1)+'% del total'):'— del total';
   if(elOffP)elOffP.textContent=total>0?(((offline/total)*100).toFixed(1)+'% del total'):'— del total';
+  if(elRezP)elRezP.textContent=total>0?(((rezagados/total)*100).toFixed(1)+'% del total'):'— del total';
   setTimeout(function(){
     if(elOnBar)elOnBar.style.width=total>0?((online/total)*100)+'%':'0%';
     if(elOffBar)elOffBar.style.width=total>0?((offline/total)*100)+'%':'0%';
+    if(elRezBar)elRezBar.style.width=total>0?((rezagados/total)*100)+'%':'0%';
   },100);
 }
 

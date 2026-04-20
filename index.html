@@ -700,15 +700,20 @@
             <div id="nmdp-exp-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
           </div>
         </div>
-        <div class="fin-kpi" style="border-bottom-color:#d97706;text-align:center">
-          <span class="fin-kpi-icon">⏳</span>
-          <div class="fin-kpi-label">Rezagados</div>
-          <div class="fin-kpi-val" style="color:#d97706" id="nmdp-exp-rezagados">—</div>
-          <div class="fin-kpi-sub" id="nmdp-exp-rezagados-pct">— del total</div>
-          <div style="margin-top:10px;background:#e8eef5;border-radius:99px;height:6px;overflow:hidden">
-            <div id="nmdp-exp-rezagados-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#d97706,#fbbf24);width:0%;transition:width 1s ease"></div>
-          </div>
+      </div>
+
+      <!-- Tabla rezagados históricos -->
+      <div class="fin-table-wrap" style="margin-bottom:24px">
+        <div class="fin-table-head">
+          <span class="fin-table-title">⏳ Expedientes Rezagados por Mes</span>
+          <span class="fin-table-badge" id="nmdp-rez-total-badge">Total: —</span>
         </div>
+        <table class="fin-estado">
+          <thead><tr><th>Mes</th><th style="text-align:right">Rezagados</th><th style="text-align:right">% del total</th></tr></thead>
+          <tbody id="nmdp-rez-tbody">
+            <tr><td colspan="3" class="fin-empty">⏳ Cargando...</td></tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Cuerpo: tabla financiera -->
@@ -1069,18 +1074,18 @@ async function loadAll(){
         var kRezMes=keys.find(function(k){return k.toLowerCase().trim()==='rezagados';});
         var kRezVal=keys.find(function(k){return k.toLowerCase().trim()==='total_rezagados';});
         var mes=kMes?String(r[kMes]||'').trim():'';
-        if(!mes)return null;
-        // Acumular expedientes de todas las filas
-        expedientesData.total+=parseFloat(r[kTotal]||0)||0;
-        expedientesData.online+=parseFloat(r[kOnline]||0)||0;
-        expedientesData.offline+=parseFloat(r[kOffline]||0)||0;
-        // Parsear columnas L-M (rezagados históricos) si existen en esta fila
+        // Parsear columnas L-M (rezagados históricos) — pueden estar en filas sin MES principal
         if(kRezMes&&kRezVal&&r[kRezMes]&&String(r[kRezMes]).trim()){
           rezagadosData.push({
-            label:String(r[kRezMes]).trim().toUpperCase(),
+            label:String(r[kRezMes]).trim(),
             valor:parseFloat(r[kRezVal]||0)||0
           });
         }
+        if(!mes)return null;
+        // Acumular expedientes de filas con mes principal
+        expedientesData.total+=parseFloat(r[kTotal]||0)||0;
+        expedientesData.online+=parseFloat(r[kOnline]||0)||0;
+        expedientesData.offline+=parseFloat(r[kOffline]||0)||0;
         return{
           mes:mes,
           recQty:parseFloat(r[kRecQty]||0)||0,
@@ -1903,38 +1908,37 @@ function renderExpedientes(){
   } else {
     d=expedientesData;
   }
-  // Buscar rezagados: match por nombre de mes (ej. "MARZO 2026" contiene "MARZO")
-  var rezagados=0;
-  if(filtroMes){
-    var mesKey=filtroMes.toUpperCase().trim();
-    var matchRez=rezagadosData.find(function(r){return r.label.indexOf(mesKey)!==-1||mesKey.indexOf(r.label.split(' ')[0])!==-1;});
-    rezagados=matchRez?matchRez.valor:0;
-  } else {
-    rezagados=rezagadosData.reduce(function(s,r){return s+r.valor;},0);
-  }
   var total=d.total||0,online=d.online||0,offline=d.offline||0;
   var elT=document.getElementById('nmdp-exp-total');
   var elOn=document.getElementById('nmdp-exp-online');
   var elOff=document.getElementById('nmdp-exp-offline');
-  var elRez=document.getElementById('nmdp-exp-rezagados');
   var elOnP=document.getElementById('nmdp-exp-online-pct');
   var elOffP=document.getElementById('nmdp-exp-offline-pct');
-  var elRezP=document.getElementById('nmdp-exp-rezagados-pct');
   var elOnBar=document.getElementById('nmdp-exp-online-bar');
   var elOffBar=document.getElementById('nmdp-exp-offline-bar');
-  var elRezBar=document.getElementById('nmdp-exp-rezagados-bar');
   if(elT)elT.textContent=total||'—';
   if(elOn)elOn.textContent=online||'—';
   if(elOff)elOff.textContent=offline||'—';
-  if(elRez)elRez.textContent=rezagados||'—';
   if(elOnP)elOnP.textContent=total>0?(((online/total)*100).toFixed(1)+'% del total'):'— del total';
   if(elOffP)elOffP.textContent=total>0?(((offline/total)*100).toFixed(1)+'% del total'):'— del total';
-  if(elRezP)elRezP.textContent=total>0?(((rezagados/total)*100).toFixed(1)+'% del total'):'— del total';
   setTimeout(function(){
     if(elOnBar)elOnBar.style.width=total>0?((online/total)*100)+'%':'0%';
     if(elOffBar)elOffBar.style.width=total>0?((offline/total)*100)+'%':'0%';
-    if(elRezBar)elRezBar.style.width=total>0?((rezagados/total)*100)+'%':'0%';
   },100);
+  // Tabla de rezagados (siempre muestra el historial completo)
+  var tbody=document.getElementById('nmdp-rez-tbody');
+  var badge=document.getElementById('nmdp-rez-total-badge');
+  if(!tbody)return;
+  if(!rezagadosData.length){
+    tbody.innerHTML='<tr><td colspan="3" class="fin-empty">Sin datos de rezagados en el Sheet</td></tr>';
+    return;
+  }
+  var totalRez=rezagadosData.reduce(function(s,r){return s+r.valor;},0);
+  if(badge)badge.textContent='Total: '+totalRez;
+  tbody.innerHTML=rezagadosData.map(function(r){
+    var pct=totalRez>0?((r.valor/totalRez)*100).toFixed(1)+'%':'—';
+    return '<tr><td>'+r.label+'</td><td style="text-align:right;font-weight:500;color:#d97706">'+r.valor+'</td><td style="text-align:right;color:#888">'+pct+'</td></tr>';
+  }).join('')+'<tr style="border-top:1.5px solid #e2e8f0;font-weight:600"><td>Total acumulado</td><td style="text-align:right;color:#d97706">'+totalRez+'</td><td style="text-align:right">100%</td></tr>';
 }
 
 function renderNMDP(){

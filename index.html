@@ -709,9 +709,9 @@
           <span class="fin-table-badge" id="nmdp-rez-total-badge">Total: —</span>
         </div>
         <table class="fin-estado">
-          <thead><tr><th>Mes</th><th style="text-align:right">Rezagados</th><th style="text-align:right">% del total</th></tr></thead>
+          <thead><tr><th>Mes</th><th style="text-align:right">Rezagados</th><th style="text-align:right">🌐 Online</th><th style="text-align:right">📴 Offline</th><th style="text-align:right">% del total</th></tr></thead>
           <tbody id="nmdp-rez-tbody">
-            <tr><td colspan="3" class="fin-empty">⏳ Cargando...</td></tr>
+            <tr><td colspan="5" class="fin-empty">⏳ Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1073,12 +1073,19 @@ async function loadAll(){
         var kOffline=keys.find(function(k){return k.toLowerCase().trim()==='offline';});
         var kRezMes=keys.find(function(k){return k.toLowerCase().trim()==='rezagados';});
         var kRezVal=keys.find(function(k){return k.toLowerCase().trim()==='total_rezagados';});
+        var kRezOnline=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='online_rezagados'||kl==='rez_online'||kl==='rezagados_online'||kl==='online rezagados';});
+        var kRezOffline=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='offline_rezagados'||kl==='rez_offline'||kl==='rezagados_offline'||kl==='offline rezagados';});
+        // fallback: columnas por posición N (13) y O (14) si no se encontraron por nombre
+        if(!kRezOnline&&keys.length>13)kRezOnline=keys[13];
+        if(!kRezOffline&&keys.length>14)kRezOffline=keys[14];
         var mes=kMes?String(r[kMes]||'').trim():'';
-        // Parsear columnas L-M (rezagados históricos) — pueden estar en filas sin MES principal
+        // Parsear columnas rezagados históricos — pueden estar en filas sin MES principal
         if(kRezMes&&kRezVal&&r[kRezMes]&&String(r[kRezMes]).trim()){
           rezagadosData.push({
             label:String(r[kRezMes]).trim(),
-            valor:parseFloat(r[kRezVal]||0)||0
+            valor:parseFloat(r[kRezVal]||0)||0,
+            online:parseFloat(r[kRezOnline]||0)||0,
+            offline:parseFloat(r[kRezOffline]||0)||0
           });
         }
         if(!mes)return null;
@@ -1930,15 +1937,27 @@ function renderExpedientes(){
   var badge=document.getElementById('nmdp-rez-total-badge');
   if(!tbody)return;
   if(!rezagadosData.length){
-    tbody.innerHTML='<tr><td colspan="3" class="fin-empty">Sin datos de rezagados en el Sheet</td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" class="fin-empty">Sin datos de rezagados en el Sheet</td></tr>';
     return;
   }
   var totalRez=rezagadosData.reduce(function(s,r){return s+r.valor;},0);
   if(badge)badge.textContent='Total: '+totalRez;
+  var totalOnline=rezagadosData.reduce(function(s,r){return s+(r.online||0);},0);
+  var totalOffline=rezagadosData.reduce(function(s,r){return s+(r.offline||0);},0);
   tbody.innerHTML=rezagadosData.map(function(r){
     var pct=totalRez>0?((r.valor/totalRez)*100).toFixed(1)+'%':'—';
-    return '<tr><td>'+r.label+'</td><td style="text-align:right;font-weight:500;color:#d97706">'+r.valor+'</td><td style="text-align:right;color:#888">'+pct+'</td></tr>';
-  }).join('')+'<tr style="border-top:1.5px solid #e2e8f0;font-weight:600"><td>Total acumulado</td><td style="text-align:right;color:#d97706">'+totalRez+'</td><td style="text-align:right">100%</td></tr>';
+    var onlineVal=(r.online||0)>0?r.online:'—';
+    var offlineVal=(r.offline||0)>0?r.offline:'—';
+    return '<tr><td>'+r.label+'</td>'
+      +'<td style="text-align:right;font-weight:500;color:#d97706">'+r.valor+'</td>'
+      +'<td style="text-align:right;font-weight:500;color:#16a34a">'+onlineVal+'</td>'
+      +'<td style="text-align:right;font-weight:500;color:#ef4444">'+offlineVal+'</td>'
+      +'<td style="text-align:right;color:#888">'+pct+'</td></tr>';
+  }).join('')+'<tr style="border-top:1.5px solid #e2e8f0;font-weight:600"><td>Total acumulado</td>'
+    +'<td style="text-align:right;color:#d97706">'+totalRez+'</td>'
+    +'<td style="text-align:right;color:#16a34a">'+totalOnline+'</td>'
+    +'<td style="text-align:right;color:#ef4444">'+totalOffline+'</td>'
+    +'<td style="text-align:right">100%</td></tr>';
 }
 
 function renderNMDP(){

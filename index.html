@@ -924,7 +924,7 @@ function onPageMesChange(page){
   var mes=getPageMes(page);
   if(page==='men'){zohoAgentes=[];if(zohoRetryTimer){clearTimeout(zohoRetryTimer);zohoRetryTimer=null;}renderMensual(mes);}
   if(page==='rec')renderRecuperaciones(mes);
-  if(page==='srv')renderServicio(mes);
+  if(page==='srv'){zohoAgentes=[];loadZohoAgentes(mes||getMesActualFrontend());renderServicio(mes);}
   if(page==='des'){zohoAgentes=[];loadZohoAgentes(mes||getMesActualFrontend());renderSolicitudes();}
 }
 

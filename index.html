@@ -326,6 +326,41 @@
   @media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.pend-summary{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:900px){.g3{grid-template-columns:repeat(2,1fr)}.sidebar{width:180px}.pend-summary{grid-template-columns:repeat(2,1fr)}.sol-body{flex-direction:column}.sol-table-col{width:100%;border-right:none;border-bottom:1px solid #e2e8f0}}
   @media(max-width:600px){.g4,.g3,.g2{grid-template-columns:1fr}.pend-summary{grid-template-columns:repeat(2,1fr)}.sidebar{width:60px}.nav-item span{display:none}.sidebar-title{display:none}}
+  .hb-wrap{background:linear-gradient(135deg,#0d2b4e 0%,#1a3f6f 60%,#0f4c81 100%);border-radius:20px;padding:28px 28px 22px;margin-bottom:22px;color:#fff;overflow:hidden;position:relative}
+  .hb-wrap::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
+  .hb-wrap::after{content:'';position:absolute;bottom:-40px;left:40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.03);pointer-events:none}
+  .hb-title{font-size:.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px}
+  .hb-subtitle{font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:22px}
+  .hb-kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+  .hb-kpi{flex:1;min-width:120px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px}
+  .hb-kpi-lbl{font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px}
+  .hb-kpi-val{font-size:1.6rem;font-weight:900;line-height:1;color:#fff}
+  .hb-kpi-sub{font-size:.6rem;color:rgba(255,255,255,.4);margin-top:4px}
+  .hb-kpi-badge{display:inline-block;font-size:.55rem;font-weight:700;padding:2px 8px;border-radius:99px;margin-top:5px}
+  .hb-chart-area{position:relative}
+  .hb-chart-title{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+  .hb-legend{display:flex;gap:14px}
+  .hb-leg{display:flex;align-items:center;gap:5px;font-size:.62rem;color:rgba(255,255,255,.6)}
+  .hb-leg-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
+  .hb-bars{display:flex;align-items:flex-end;gap:6px;padding-bottom:0}
+  .hb-bar-group{display:flex;align-items:flex-end;gap:3px;flex:1;position:relative}
+  .hb-bar-group:hover .hb-tooltip{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  .hb-bar{border-radius:6px 6px 2px 2px;min-height:4px;transition:opacity .2s;cursor:default}
+  .hb-bar.internos{background:linear-gradient(180deg,#60a5fa,#3b82f6)}
+  .hb-bar.externos{background:linear-gradient(180deg,#4ade80,#22c55e)}
+  .hb-bar-group:hover .hb-bar{opacity:.85}
+  .hb-x{text-align:center;font-size:.58rem;color:rgba(255,255,255,.4);margin-top:6px;width:100%}
+  .hb-month-col{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0}
+  .hb-month-col.active .hb-x{color:#fff;font-weight:700}
+  .hb-month-col.active .hb-bar{filter:brightness(1.2)}
+  .hb-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(0);background:rgba(255,255,255,.97);color:#0d2b4e;border-radius:8px;padding:8px 11px;font-size:.65rem;white-space:nowrap;pointer-events:none;opacity:0;transition:all .18s;box-shadow:0 4px 20px rgba(0,0,0,.25);z-index:10}
+  .hb-tooltip strong{display:block;font-size:.75rem;margin-bottom:4px;font-weight:800}
+  .hb-tooltip span{display:flex;align-items:center;gap:4px;color:#374151;margin-bottom:2px}
+  .hb-divider{height:1px;background:rgba(255,255,255,.08);margin:20px 0}
+  .hb-bottom{display:flex;gap:14px;flex-wrap:wrap}
+  .hb-stat{flex:1;min-width:110px;text-align:center}
+  .hb-stat-n{font-size:1.2rem;font-weight:800;color:#fff}
+  .hb-stat-l{font-size:.58rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
 </style>
 </head>
 <body>

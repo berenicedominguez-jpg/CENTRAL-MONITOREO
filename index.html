@@ -924,7 +924,7 @@ function onPageMesChange(page){
   var mes=getPageMes(page);
   if(page==='men'){zohoAgentes=[];if(zohoRetryTimer){clearTimeout(zohoRetryTimer);zohoRetryTimer=null;}renderMensual(mes);}
   if(page==='rec')renderRecuperaciones(mes);
-  if(page==='srv'){zohoAgentes=[];loadZohoAgentes(mes||getMesActualFrontend());renderServicio(mes);}
+  if(page==='srv'){zohoAgentes=[];renderServicio(mes);}
   if(page==='des'){zohoAgentes=[];loadZohoAgentes(mes||getMesActualFrontend());renderSolicitudes();}
 }
 
@@ -1435,7 +1435,16 @@ function renderServicio(mes){
   if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);document.getElementById('srv-capac').textContent=avg.toFixed(1)+'%';}
   else document.getElementById('srv-capac').textContent='—';
   renderGraficaCapac(mes);renderGraficaCarso();
-  if(zohoAgentes.length)renderAgentesZoho();else loadZohoAgentes(mesKey);
+  // Verificar si zohoAgentes corresponde al mes solicitado
+  var cachedMes=zohoCacheGet(mesKey);
+  var agentesDelMes=cachedMes&&cachedMes.agentes&&cachedMes.agentes.length?cachedMes.agentes:null;
+  if(agentesDelMes){
+    zohoAgentes=agentesDelMes;
+    renderAgentesZoho();
+  } else {
+    zohoAgentes=[];
+    loadZohoAgentes(mesKey);
+  }
 }
 
 function renderGraficaCapac(mes){

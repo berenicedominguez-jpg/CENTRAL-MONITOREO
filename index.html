@@ -546,7 +546,8 @@
         </table>
       </div>
 
-      <div id="nc-internos-chart" style="margin-top:22px"></div>
+      <!-- TABLERO HISTÓRICO COMBINADO -->
+      <div id="srv-historico-board" style="margin-top:22px"></div>
       <div id="nc-carso"></div>
     </div>
 
@@ -1455,7 +1456,7 @@ function renderServicio(mes){
   var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
   if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);document.getElementById('srv-capac').textContent=avg.toFixed(1)+'%';}
   else document.getElementById('srv-capac').textContent='—';
-  renderGraficaCapac(mes);renderGraficaCarso();renderExterno(mes);renderCapacClientes(mes);renderGraficaInternos(mes);
+  renderGraficaCapac(mes);renderGraficaCarso();renderHistoricBoard(mes);
   // Verificar si zohoAgentes corresponde al mes solicitado
   var cachedMes=zohoCacheGet(mesKey);
   var agentesDelMes=cachedMes&&cachedMes.agentes&&cachedMes.agentes.length?cachedMes.agentes:null;
@@ -1466,6 +1467,107 @@ function renderServicio(mes){
     zohoAgentes=[];
     loadZohoAgentes(mesKey);
   }
+}
+
+// ── TABLERO HISTÓRICO COMBINADO ──────────────────────────────
+function renderHistoricBoard(mesActivo){
+  var el=document.getElementById('srv-historico-board');
+  if(!el)return;
+
+  // Reunir internos del localStorage
+  var internosMap={};
+  Object.keys(localStorage).filter(function(k){return k.startsWith('zoho_cache_');}).forEach(function(k){
+    try{
+      var obj=JSON.parse(localStorage.getItem(k));
+      if(!obj||!obj.agentes)return;
+      var m=k.replace('zoho_cache_','').toUpperCase();
+      internosMap[m]=obj.agentes.reduce(function(s,a){return s+(a.tickets||0);},0);
+    }catch(e){}
+  });
+
+  // Reunir externos del monitoreoData
+  var externosMap={};
+  monitoreoData.forEach(function(r){
+    if(!externosMap[r.mes])externosMap[r.mes]={env:0,tmed:[]};
+    externosMap[r.mes].env+=r.enviados;
+    if(r.tiempoMediano>0)externosMap[r.mes].tmed.push(r.tiempoMediano);
+  });
+
+  // Unión de meses
+  var todosMeses=[...new Set(Object.keys(internosMap).concat(Object.keys(externosMap)))].filter(function(m){return MESES_ORD.indexOf(m)>=0;}).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
+  if(!todosMeses.length){el.innerHTML='';return;}
+
+  var maxBar=Math.max.apply(null,todosMeses.map(function(m){return Math.max(internosMap[m]||0,(externosMap[m]||{env:0}).env);}));
+  maxBar=Math.max(maxBar,1);
+  var CHART_H=110;
+
+  // KPIs totales
+  var totInt=todosMeses.reduce(function(s,m){return s+(internosMap[m]||0);},0);
+  var totExt=todosMeses.reduce(function(s,m){return s+(externosMap[m]?externosMap[m].env:0);},0);
+  var totAll=totInt+totExt;
+  var avgTmed=0,tmedCount=0;
+  todosMeses.forEach(function(m){if(externosMap[m]&&externosMap[m].tmed.length){externosMap[m].tmed.forEach(function(t){avgTmed+=t;tmedCount++;});}});
+  var tiempoStr=tmedCount>0?Math.round(avgTmed/tmedCount)+' min':'—';
+
+  // Mes activo KPIs
+  var mesKey=(mesActivo||'').toUpperCase().trim()||todosMeses[todosMeses.length-1];
+  var intMes=internosMap[mesKey]||0;
+  var extMes=externosMap[mesKey]?externosMap[mesKey].env:0;
+  var tmedMes=externosMap[mesKey]&&externosMap[mesKey].tmed.length?Math.round(externosMap[mesKey].tmed.reduce(function(s,v){return s+v;},0)/externosMap[mesKey].tmed.length)+' min':'—';
+
+  // Barras
+  var barsHtml=todosMeses.map(function(m){
+    var intV=internosMap[m]||0;
+    var extV=externosMap[m]?externosMap[m].env:0;
+    var hInt=Math.max(Math.round((intV/maxBar)*CHART_H),intV>0?5:0);
+    var hExt=Math.max(Math.round((extV/maxBar)*CHART_H),extV>0?5:0);
+    var isAct=m===mesKey;
+    var label=m.charAt(0)+m.slice(1,3).toLowerCase();
+    var tmedVal=externosMap[m]&&externosMap[m].tmed.length?Math.round(externosMap[m].tmed.reduce(function(s,v){return s+v;},0)/externosMap[m].tmed.length)+' min':'—';
+    var tooltip='<div class="hb-tooltip"><strong>'+m.charAt(0)+m.slice(1).toLowerCase()+'</strong>'
+      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3b82f6;margin-right:3px"></span>Internos: <b>'+intV+'</b></span>'
+      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#22c55e;margin-right:3px"></span>Externos: <b>'+extV+'</b></span>'
+      +(tmedVal!=='—'?'<span style="color:#f59e0b">⏱ T.med: <b>'+tmedVal+'</b></span>':'')
+      +'</div>';
+    return'<div class="hb-month-col'+(isAct?' active':'')+'">'
+      +'<div class="hb-bar-group">'
+      +tooltip
+      +'<div class="hb-bar internos" style="height:'+hInt+'px;flex:1"></div>'
+      +'<div class="hb-bar externos" style="height:'+hExt+'px;flex:1"></div>'
+      +'</div>'
+      +'<div class="hb-x">'+label+'</div>'
+      +'</div>';
+  }).join('');
+
+  var mesLabel=mesKey.charAt(0)+mesKey.slice(1).toLowerCase();
+  var pctInt=totAll>0?Math.round(intMes/(intMes+extMes)*100):0;
+
+  el.innerHTML=''
+    +'<div class="hb-wrap">'
+    // Header
+    +'<div class="hb-title">Tablero histórico</div>'
+    +'<div class="hb-subtitle">Tickets Internos & Externos · '+mesLabel+'</div>'
+    // KPIs del mes activo
+    +'<div class="hb-kpis">'
+    +'<div class="hb-kpi"><div class="hb-kpi-lbl">🔵 Internos · '+mesLabel+'</div><div class="hb-kpi-val">'+intMes+'</div><div class="hb-kpi-sub">tickets Zoho</div></div>'
+    +'<div class="hb-kpi"><div class="hb-kpi-lbl">🟢 Externos · '+mesLabel+'</div><div class="hb-kpi-val">'+extMes+'</div><div class="hb-kpi-sub">tickets cim@</div><div class="hb-kpi-badge" style="background:rgba(74,222,128,.15);color:#4ade80">⏱ '+tmedMes+'</div></div>'
+    +'<div class="hb-kpi"><div class="hb-kpi-lbl">Total acumulado</div><div class="hb-kpi-val">'+totAll.toLocaleString()+'</div><div class="hb-kpi-sub">int: '+totInt.toLocaleString()+' · ext: '+totExt.toLocaleString()+'</div></div>'
+    +'<div class="hb-kpi"><div class="hb-kpi-lbl">T. mediano ext.</div><div class="hb-kpi-val" style="font-size:1.3rem">'+tiempoStr+'</div><div class="hb-kpi-sub">promedio anual</div></div>'
+    +'</div>'
+    // Gráfica
+    +'<div class="hb-chart-area">'
+    +'<div class="hb-chart-title">Evolución mensual<div class="hb-legend"><div class="hb-leg"><div class="hb-leg-dot" style="background:#3b82f6"></div>Internos</div><div class="hb-leg"><div class="hb-leg-dot" style="background:#22c55e"></div>Externos</div></div></div>'
+    +'<div class="hb-bars" style="height:'+(CHART_H+20)+'px">'+barsHtml+'</div>'
+    +'</div>'
+    // Divider + totales
+    +'<div class="hb-divider"></div>'
+    +'<div class="hb-bottom">'
+    +'<div class="hb-stat"><div class="hb-stat-n">'+todosMeses.length+'</div><div class="hb-stat-l">Meses con datos</div></div>'
+    +'<div class="hb-stat"><div class="hb-stat-n">'+Math.round(totInt/Math.max(todosMeses.filter(function(m){return(internosMap[m]||0)>0;}).length,1))+'</div><div class="hb-stat-l">Prom. internos/mes</div></div>'
+    +'<div class="hb-stat"><div class="hb-stat-n">'+Math.round(totExt/Math.max(todosMeses.filter(function(m){return externosMap[m]&&externosMap[m].env>0;}).length,1))+'</div><div class="hb-stat-l">Prom. externos/mes</div></div>'
+    +'<div class="hb-stat"><div class="hb-stat-n">'+(totAll>0?Math.round(totInt/totAll*100)+'%':'—')+'</div><div class="hb-stat-l">% internos del total</div></div>'
+    +'</div>'
+    +'</div>';
 }
 
 // ── RENDER EXTERNOS ─────────────────────────────────────────

@@ -494,10 +494,20 @@
         </div>
       </div>
       <div class="rd-stat-row">
-        <div class="rd-stat-card">
-          <div class="rd-stat-lbl">🎫 Total Tickets Internos</div>
+        <div class="rd-stat-card" style="min-width:240px">
+          <div class="rd-stat-lbl">🎫 TOTAL DE TICKETS</div>
           <div class="rd-stat-num" id="srv-total">—</div>
-          <div style="font-size:.67rem;color:#94a3b8">este período</div>
+          <div style="font-size:.67rem;color:#94a3b8;margin-bottom:10px">este período</div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <div style="background:#eff6ff;border-radius:10px;padding:7px 14px;text-align:center;min-width:90px">
+              <div style="font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2563a8;margin-bottom:3px">🔵 Internos</div>
+              <div style="font-size:1.3rem;font-weight:800;color:#0d2b4e;line-height:1" id="srv-total-internos">—</div>
+            </div>
+            <div style="background:#f0fdf4;border-radius:10px;padding:7px 14px;text-align:center;min-width:90px">
+              <div style="font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#16a34a;margin-bottom:3px">🟢 Externos</div>
+              <div style="font-size:1.3rem;font-weight:800;color:#0d2b4e;line-height:1" id="srv-total-externos">—</div>
+            </div>
+          </div>
         </div>
         <div class="rd-stat-card">
           <div class="rd-stat-lbl">⏱️ Tiempo Prom. Respuesta</div>
@@ -775,7 +785,7 @@ var INTERVALOS=['- 30 MINUTOS','30 MINUTOS - 1 HR','1-3 HRS.','3-12 HRS.','12 HR
 var CON_MAP={'general':['GENERAL','CONECTIVIDAD GENERAL'],'legacy':['LEGACY'],'s1':['S1'],'s2':['S2'],'s3':['S3'],'bafar':['BAFAR'],'recuperamovil':['RECUPERAMOVIL']};
 var CHART_H=200;
 var now=new Date();
-var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={},rezagadosData=[];
+var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={},rezagadosData=[],monitoreoData=[];
 var actividadesData=[],solicitudesData=[],conectividadData={};
 var frtFallbackMap={},frtFallbackGlobal=0;
 var zohoHistorial={},zohoHistorialTotal={},conectividadHistorial={};
@@ -1419,6 +1429,7 @@ function renderRecuperaciones(mes){
 }
 
 function renderServicio(mes){
+  currentServicioMes=mes||'';
   var mesKey=mes||getMesActualFrontend();
   var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
   if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);document.getElementById('srv-capac').textContent=avg.toFixed(1)+'%';}
@@ -1512,9 +1523,45 @@ async function loadZohoAgentes(mes){
   }catch(e){if(body)body.innerHTML='<tr class="loading-row"><td colspan="5">⚠️ '+e.message+'</td></tr>';}
 }
 
+var MONITOREO_API='https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
+var MONITOREO_SS='1uqfygTMrJMTQd3uTqYAcJkWQjyMiL6_VDjrp4--HSUU';
+var currentServicioMes='';
+
+function getExternoVal(mes){
+  if(!monitoreoData.length)return 0;
+  var rows=mes?monitoreoData.filter(function(r){return r.mes===mes.toUpperCase().trim();}):monitoreoData;
+  return rows.reduce(function(s,r){return s+r.enviados;},0);
+}
+
+function updateExterno(mes){
+  var val=getExternoVal(mes);
+  var el=document.getElementById('srv-total-externos');
+  if(el)el.textContent=val||'—';
+}
+
+async function loadMonitoreoExterno(){
+  try{
+    var url=API+'?sheet=MONITOREO';
+    var json=await fetch(url).then(function(r){return r.json();});
+    if(json.error){console.warn('MONITOREO error:',json.error);return;}
+    monitoreoData=(json.rows||[]).map(function(r){
+      var mes=String(r['mes']||'').toUpperCase().trim();
+      var env=parseFloat(r['enviados por cim@']||r['enviados']||0)||0;
+      return{mes:mes,enviados:env};
+    }).filter(function(r){return r.mes&&r.enviados>0;});
+  }catch(e){console.warn('Error cargando monitoreoData:',e);}
+}
+
 function renderAgentesZoho(){
   var total=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
-  document.getElementById('srv-total').textContent=total||'—';
+  // Internos = tickets Zoho (current behavior)
+  var elInt=document.getElementById('srv-total-internos');
+  if(elInt)elInt.textContent=total||'—';
+  // Externos = from monitoreoData
+  updateExterno(currentServicioMes);
+  // Total = internos + externos
+  var extVal=getExternoVal(currentServicioMes);
+  document.getElementById('srv-total').textContent=(total+extVal)||'—';
   var frt=getGlobalFrt(zohoAgentes);
   var frtEl=document.getElementById('srv-frt');
   frtEl.textContent=frt?fmtMin(frt):'—';
@@ -2093,6 +2140,7 @@ function renderNMDPDonut(rec,noRec){
 }
 
 buildCuatriTabs();
+loadMonitoreoExterno();
 loadAll();
 </script>
 </body>

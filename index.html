@@ -287,7 +287,7 @@
   .rd-bok{background:#e1f5ee;color:#0f6e56}
   .rd-bfail{background:#fcebeb;color:#a32d2d}
   .rd-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-  .rd-stat-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 8px rgba(13,43,78,.07);text-align:center}
+  .rd-stat-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 8px rgba(13,43,78,.07);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .rd-stat-num{font-size:1.8rem;font-weight:800;color:#0d2b4e;line-height:1;margin:.25rem 0}
   .rd-stat-lbl{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8}
   .rd-tbl{width:100%;border-collapse:collapse;font-size:.75rem}
@@ -387,7 +387,7 @@
   .cp-rank-val{font-size:.78rem;font-weight:800;min-width:22px;text-align:right}
   /* ── PANEL EXTERNOS ── */
   .ext-wrap{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(13,43,78,.08);overflow:hidden;margin-bottom:22px}
-  .ext-header{background:linear-gradient(135deg,#064e3b,#065f46);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .ext-header{background:linear-gradient(135deg,#0d2b4e,#1a3f6f);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
   .ext-header-title{color:#fff;font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:8px}
   .ext-kpis{display:flex;gap:10px}
   .ext-kpi{background:rgba(255,255,255,.12);border-radius:10px;padding:8px 14px;text-align:center;min-width:80px}
@@ -397,11 +397,11 @@
   .ext-chart-lbl{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px}
   .ext-months{display:flex;align-items:flex-end;gap:8px;height:140px}
   .ext-month-col{flex:1;display:flex;flex-direction:column;align-items:center}
-  .ext-month-col.active .ext-bar{background:linear-gradient(180deg,#34d399,#059669)}
-  .ext-month-col.active .ext-x{font-weight:800;color:#059669}
-  .ext-month-col.active .ext-val{color:#059669;font-weight:800}
-  .ext-bar{width:100%;border-radius:6px 6px 2px 2px;background:#d1fae5;transition:height .4s;min-height:4px;cursor:default;position:relative}
-  .ext-bar:hover{background:linear-gradient(180deg,#34d399,#059669);opacity:.85}
+  .ext-month-col.active .ext-bar{background:linear-gradient(180deg,#60a5fa,#2563a8)}
+  .ext-month-col.active .ext-x{font-weight:800;color:#2563a8}
+  .ext-month-col.active .ext-val{color:#2563a8;font-weight:800}
+  .ext-bar{width:100%;border-radius:6px 6px 2px 2px;background:#dbeafe;transition:height .4s;min-height:4px;cursor:default;position:relative}
+  .ext-bar:hover{background:linear-gradient(180deg,#60a5fa,#2563a8);opacity:.85}
   .ext-x{font-size:.6rem;color:#94a3b8;margin-top:5px;text-align:center}
   .ext-val{font-size:.62rem;color:#64748b;margin-top:2px;text-align:center}
   .ext-tmed{font-size:.55rem;color:#f59e0b;text-align:center;margin-top:1px}
@@ -593,8 +593,18 @@
         </div>
         <div class="rd-stat-card">
           <div class="rd-stat-lbl">⏱️ Tiempo Prom. Respuesta</div>
-          <div class="rd-stat-num" id="srv-frt" style="color:#0f6e56">—</div>
-          <span class="rd-badge rd-bok" style="font-size:.6rem">Meta ≤ 15 min</span>
+          <div style="display:flex;gap:16px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin-bottom:6px">
+            <div style="text-align:center">
+              <div style="font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2563a8;margin-bottom:3px">🔵 Internos</div>
+              <div class="rd-stat-num" id="srv-frt" style="color:#0f6e56;font-size:1.6rem">—</div>
+              <span class="rd-badge rd-bok" style="font-size:.6rem">Meta ≤ 15 min</span>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#16a34a;margin-bottom:3px">🟢 Externos</div>
+              <div class="rd-stat-num" id="srv-frt-ext" style="color:#0f6e56;font-size:1.6rem">—</div>
+              <span class="rd-badge" id="srv-frt-ext-badge" style="font-size:.6rem;background:#f0fdf4;color:#16a34a">T. mediano</span>
+            </div>
+          </div>
         </div>
         <div class="rd-stat-card">
           <div class="rd-stat-lbl">📚 Satisfacción Capacitaciones</div>
@@ -1677,8 +1687,8 @@ function renderExternosPanel(mes){
     +'<div class="ext-chart-lbl">Enviados por mes · barra activa = mes seleccionado</div>'
     +'<div class="ext-months" style="height:'+(CHART_H+52)+'px">'+barsHtml+'</div>'
     +'<div class="ext-legend">'
-    +'<div class="ext-leg-item"><div class="ext-leg-dot" style="background:#059669"></div>Mes activo</div>'
-    +'<div class="ext-leg-item"><div class="ext-leg-dot" style="background:#d1fae5"></div>Otros meses</div>'
+    +'<div class="ext-leg-item"><div class="ext-leg-dot" style="background:#2563a8"></div>Mes activo</div>'
+    +'<div class="ext-leg-item"><div class="ext-leg-dot" style="background:#dbeafe"></div>Otros meses</div>'
     +'<div class="ext-leg-item" style="color:#f59e0b">⏱ T.med = tiempo mediano de atención</div>'
     +'<div class="ext-leg-item" style="margin-left:auto;font-weight:700;color:#0d2b4e">Prom. anual: '+avgTmedStr+'</div>'
     +'</div>'
@@ -1785,6 +1795,13 @@ function updateExterno(mes){
   var val=getExternoVal(mes);
   var el=document.getElementById('srv-total-externos');
   if(el)el.textContent=val||'—';
+  // Tiempo mediano externos
+  var mesKey=(mes||'').toUpperCase().trim();
+  var rows=mesKey?monitoreoData.filter(function(r){return r.mes===mesKey;}):monitoreoData;
+  var tmeds=rows.filter(function(r){return r.tiempoMediano>0;}).map(function(r){return r.tiempoMediano;});
+  var tmed=tmeds.length?Math.round(tmeds.reduce(function(s,v){return s+v;},0)/tmeds.length):0;
+  var elFrt=document.getElementById('srv-frt-ext');
+  if(elFrt)elFrt.textContent=tmed?tmed+' min':'—';
 }
 
 async function loadMonitoreoExterno(){

@@ -361,6 +361,53 @@
   .hb-stat{flex:1;min-width:110px;text-align:center}
   .hb-stat-n{font-size:1.2rem;font-weight:800;color:#fff}
   .hb-stat-l{font-size:.58rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+
+  /* ── PANEL CAPACITACIONES ── */
+  .cp-wrap{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(13,43,78,.08);overflow:hidden;margin-bottom:22px}
+  .cp-header{background:linear-gradient(135deg,#0d2b4e,#1e4d8c);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .cp-header-title{color:#fff;font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:8px}
+  .cp-header-score{text-align:right}
+  .cp-header-score-val{font-size:2rem;font-weight:900;color:#fff;line-height:1}
+  .cp-header-score-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.5);margin-top:2px}
+  .cp-header-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.6rem;font-weight:700;margin-top:6px}
+  .cp-body{padding:20px 22px;display:flex;gap:22px;flex-wrap:wrap}
+  .cp-left{flex:1;min-width:180px}
+  .cp-section-lbl{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px}
+  .cp-donut-wrap{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .cp-donut-info{flex:1}
+  .cp-donut-total{font-size:1.8rem;font-weight:900;color:#0d2b4e;line-height:1}
+  .cp-donut-sub{font-size:.65rem;color:#94a3b8;margin-top:3px}
+  .cp-right{flex:2;min-width:260px}
+  .cp-rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9}
+  .cp-rank-item:last-child{border-bottom:none}
+  .cp-rank-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0}
+  .cp-rank-name{flex:1;font-size:.78rem;font-weight:600;color:#0d2b4e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cp-rank-bar-wrap{width:90px;background:#f1f5f9;border-radius:99px;height:7px;overflow:hidden}
+  .cp-rank-bar{height:100%;border-radius:99px;transition:width .4s}
+  .cp-rank-val{font-size:.78rem;font-weight:800;min-width:22px;text-align:right}
+  /* ── PANEL EXTERNOS ── */
+  .ext-wrap{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(13,43,78,.08);overflow:hidden;margin-bottom:22px}
+  .ext-header{background:linear-gradient(135deg,#064e3b,#065f46);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .ext-header-title{color:#fff;font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:8px}
+  .ext-kpis{display:flex;gap:10px}
+  .ext-kpi{background:rgba(255,255,255,.12);border-radius:10px;padding:8px 14px;text-align:center;min-width:80px}
+  .ext-kpi-val{font-size:1.3rem;font-weight:900;color:#fff;line-height:1}
+  .ext-kpi-lbl{font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);margin-top:3px}
+  .ext-body{padding:20px 22px}
+  .ext-chart-lbl{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px}
+  .ext-months{display:flex;align-items:flex-end;gap:8px;height:140px}
+  .ext-month-col{flex:1;display:flex;flex-direction:column;align-items:center}
+  .ext-month-col.active .ext-bar{background:linear-gradient(180deg,#34d399,#059669)}
+  .ext-month-col.active .ext-x{font-weight:800;color:#059669}
+  .ext-month-col.active .ext-val{color:#059669;font-weight:800}
+  .ext-bar{width:100%;border-radius:6px 6px 2px 2px;background:#d1fae5;transition:height .4s;min-height:4px;cursor:default;position:relative}
+  .ext-bar:hover{background:linear-gradient(180deg,#34d399,#059669);opacity:.85}
+  .ext-x{font-size:.6rem;color:#94a3b8;margin-top:5px;text-align:center}
+  .ext-val{font-size:.62rem;color:#64748b;margin-top:2px;text-align:center}
+  .ext-tmed{font-size:.55rem;color:#f59e0b;text-align:center;margin-top:1px}
+  .ext-legend{display:flex;align-items:center;gap:18px;margin-top:14px;padding-top:14px;border-top:1px solid #f1f5f9;flex-wrap:wrap}
+  .ext-leg-item{display:flex;align-items:center;gap:6px;font-size:.65rem;color:#64748b}
+  .ext-leg-dot{width:10px;height:10px;border-radius:3px}
 </style>
 </head>
 <body>
@@ -562,27 +609,11 @@
           <tbody id="srv-agentes-body"><tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando agentes...</td></tr></tbody>
         </table>
       </div>
-      <div id="nc-capac"></div>
+      <!-- PANEL COMBINADO CAPACITACIONES -->
+      <div id="srv-capac-panel" style="margin-top:22px"></div>
 
-      <!-- TICKETS EXTERNOS -->
-      <div class="rd-wrap" style="margin-top:22px">
-        <div class="rd-wrap-head"><span class="rd-wrap-title">🟢 Tickets Externos (cim@)</span></div>
-        <div id="srv-externos-body">
-          <div style="padding:28px;text-align:center;color:#94a3b8;font-size:.8rem">⏳ Cargando...</div>
-        </div>
-      </div>
-
-      <!-- CAPACITACIONES POR CLIENTE -->
-      <div class="rd-wrap" style="margin-top:22px">
-        <div class="rd-wrap-head"><span class="rd-wrap-title">📚 Capacitaciones por Cliente</span></div>
-        <table class="rd-tbl">
-          <thead><tr class="rd-top"><th style="width:36px">#</th><th style="text-align:left">Cliente</th><th>Capacitaciones</th></tr></thead>
-          <tbody id="srv-capac-clientes-body"><tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando...</td></tr></tbody>
-        </table>
-      </div>
-
-      <!-- TABLERO HISTÓRICO COMBINADO -->
-      <div id="srv-historico-board" style="margin-top:22px"></div>
+      <!-- PANEL HISTÓRICO TICKETS EXTERNOS -->
+      <div id="srv-externos-panel" style="margin-top:22px"></div>
       <div id="nc-carso"></div>
     </div>
 
@@ -1491,7 +1522,7 @@ function renderServicio(mes){
   var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
   if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);document.getElementById('srv-capac').textContent=avg.toFixed(1)+'%';}
   else document.getElementById('srv-capac').textContent='—';
-  renderGraficaCapac(mes);renderGraficaCarso();renderHistoricBoard(mes);
+  renderGraficaCapac(mes);renderGraficaCarso();renderCapacPanel(mes);renderExternosPanel(mes);
   // Verificar si zohoAgentes corresponde al mes solicitado
   var cachedMes=zohoCacheGet(mesKey);
   var agentesDelMes=cachedMes&&cachedMes.agentes&&cachedMes.agentes.length?cachedMes.agentes:null;
@@ -1504,194 +1535,155 @@ function renderServicio(mes){
   }
 }
 
-// ── TABLERO HISTÓRICO COMBINADO ──────────────────────────────
-function renderHistoricBoard(mesActivo){
-  var el=document.getElementById('srv-historico-board');
+// ── PANEL COMBINADO CAPACITACIONES ──────────────────────────
+function renderCapacPanel(mes){
+  var el=document.getElementById('srv-capac-panel');
   if(!el)return;
 
-  // Reunir internos del localStorage
-  var internosMap={};
-  Object.keys(localStorage).filter(function(k){return k.startsWith('zoho_cache_');}).forEach(function(k){
-    try{
-      var obj=JSON.parse(localStorage.getItem(k));
-      if(!obj||!obj.agentes)return;
-      var m=k.replace('zoho_cache_','').toUpperCase();
-      internosMap[m]=obj.agentes.reduce(function(s,a){return s+(a.tickets||0);},0);
-    }catch(e){}
-  });
+  // Satisfacción del mes
+  var srvRows=mes?srvData.filter(function(r){return r.mes===mes.toUpperCase().trim();}):srvData;
+  var califVal=0,totalEnc=0;
+  if(srvRows.length){
+    var tot=srvRows.reduce(function(s,r){return s+r.total;},0);
+    var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);
+    califVal=avg; totalEnc=tot;
+  }
+  var califStr=califVal>0?califVal.toFixed(1)+'%':'—';
+  var cumple=califVal>=95;
+  var badgeStyle=cumple?'background:rgba(52,211,153,.2);color:#34d399':'background:rgba(248,113,113,.2);color:#f87171';
+  var badgeTxt=cumple?'✅ Cumple meta':'⚠️ Bajo meta';
 
-  // Reunir externos del monitoreoData
-  var externosMap={};
-  monitoreoData.forEach(function(r){
-    if(!externosMap[r.mes])externosMap[r.mes]={env:0,tmed:[]};
-    externosMap[r.mes].env+=r.enviados;
-    if(r.tiempoMediano>0)externosMap[r.mes].tmed.push(r.tiempoMediano);
-  });
-
-  // Unión de meses
-  var todosMeses=[...new Set(Object.keys(internosMap).concat(Object.keys(externosMap)))].filter(function(m){return MESES_ORD.indexOf(m)>=0;}).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
-  if(!todosMeses.length){el.innerHTML='';return;}
-
-  var maxBar=Math.max.apply(null,todosMeses.map(function(m){return Math.max(internosMap[m]||0,(externosMap[m]||{env:0}).env);}));
-  maxBar=Math.max(maxBar,1);
-  var CHART_H=110;
-
-  // KPIs totales
-  var totInt=todosMeses.reduce(function(s,m){return s+(internosMap[m]||0);},0);
-  var totExt=todosMeses.reduce(function(s,m){return s+(externosMap[m]?externosMap[m].env:0);},0);
-  var totAll=totInt+totExt;
-  var avgTmed=0,tmedCount=0;
-  todosMeses.forEach(function(m){if(externosMap[m]&&externosMap[m].tmed.length){externosMap[m].tmed.forEach(function(t){avgTmed+=t;tmedCount++;});}});
-  var tiempoStr=tmedCount>0?Math.round(avgTmed/tmedCount)+' min':'—';
-
-  // Mes activo KPIs
-  var mesKey=(mesActivo||'').toUpperCase().trim()||todosMeses[todosMeses.length-1];
-  var intMes=internosMap[mesKey]||0;
-  var extMes=externosMap[mesKey]?externosMap[mesKey].env:0;
-  var tmedMes=externosMap[mesKey]&&externosMap[mesKey].tmed.length?Math.round(externosMap[mesKey].tmed.reduce(function(s,v){return s+v;},0)/externosMap[mesKey].tmed.length)+' min':'—';
-
-  // Barras
-  var barsHtml=todosMeses.map(function(m){
-    var intV=internosMap[m]||0;
-    var extV=externosMap[m]?externosMap[m].env:0;
-    var hInt=Math.max(Math.round((intV/maxBar)*CHART_H),intV>0?5:0);
-    var hExt=Math.max(Math.round((extV/maxBar)*CHART_H),extV>0?5:0);
-    var isAct=m===mesKey;
-    var label=m.charAt(0)+m.slice(1,3).toLowerCase();
-    var tmedVal=externosMap[m]&&externosMap[m].tmed.length?Math.round(externosMap[m].tmed.reduce(function(s,v){return s+v;},0)/externosMap[m].tmed.length)+' min':'—';
-    var tooltip='<div class="hb-tooltip"><strong>'+m.charAt(0)+m.slice(1).toLowerCase()+'</strong>'
-      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3b82f6;margin-right:3px"></span>Internos: <b>'+intV+'</b></span>'
-      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#22c55e;margin-right:3px"></span>Externos: <b>'+extV+'</b></span>'
-      +(tmedVal!=='—'?'<span style="color:#f59e0b">⏱ T.med: <b>'+tmedVal+'</b></span>':'')
-      +'</div>';
-    return'<div class="hb-month-col'+(isAct?' active':'')+'">'
-      +'<div class="hb-bar-group">'
-      +tooltip
-      +'<div class="hb-bar internos" style="height:'+hInt+'px;flex:1"></div>'
-      +'<div class="hb-bar externos" style="height:'+hExt+'px;flex:1"></div>'
-      +'</div>'
-      +'<div class="hb-x">'+label+'</div>'
-      +'</div>';
-  }).join('');
-
-  var mesLabel=mesKey.charAt(0)+mesKey.slice(1).toLowerCase();
-  var pctInt=totAll>0?Math.round(intMes/(intMes+extMes)*100):0;
-
-  el.innerHTML=''
-    +'<div class="hb-wrap">'
-    // Header
-    +'<div class="hb-title">Tablero histórico</div>'
-    +'<div class="hb-subtitle">Tickets Internos & Externos · '+mesLabel+'</div>'
-    // KPIs del mes activo
-    +'<div class="hb-kpis">'
-    +'<div class="hb-kpi"><div class="hb-kpi-lbl">🔵 Internos · '+mesLabel+'</div><div class="hb-kpi-val">'+intMes+'</div><div class="hb-kpi-sub">tickets Zoho</div></div>'
-    +'<div class="hb-kpi"><div class="hb-kpi-lbl">🟢 Externos · '+mesLabel+'</div><div class="hb-kpi-val">'+extMes+'</div><div class="hb-kpi-sub">tickets cim@</div><div class="hb-kpi-badge" style="background:rgba(74,222,128,.15);color:#4ade80">⏱ '+tmedMes+'</div></div>'
-    +'<div class="hb-kpi"><div class="hb-kpi-lbl">Total acumulado</div><div class="hb-kpi-val">'+totAll.toLocaleString()+'</div><div class="hb-kpi-sub">int: '+totInt.toLocaleString()+' · ext: '+totExt.toLocaleString()+'</div></div>'
-    +'<div class="hb-kpi"><div class="hb-kpi-lbl">T. mediano ext.</div><div class="hb-kpi-val" style="font-size:1.3rem">'+tiempoStr+'</div><div class="hb-kpi-sub">promedio anual</div></div>'
-    +'</div>'
-    // Gráfica
-    +'<div class="hb-chart-area">'
-    +'<div class="hb-chart-title">Evolución mensual<div class="hb-legend"><div class="hb-leg"><div class="hb-leg-dot" style="background:#3b82f6"></div>Internos</div><div class="hb-leg"><div class="hb-leg-dot" style="background:#22c55e"></div>Externos</div></div></div>'
-    +'<div class="hb-bars" style="height:'+(CHART_H+20)+'px">'+barsHtml+'</div>'
-    +'</div>'
-    // Divider + totales
-    +'<div class="hb-divider"></div>'
-    +'<div class="hb-bottom">'
-    +'<div class="hb-stat"><div class="hb-stat-n">'+todosMeses.length+'</div><div class="hb-stat-l">Meses con datos</div></div>'
-    +'<div class="hb-stat"><div class="hb-stat-n">'+Math.round(totInt/Math.max(todosMeses.filter(function(m){return(internosMap[m]||0)>0;}).length,1))+'</div><div class="hb-stat-l">Prom. internos/mes</div></div>'
-    +'<div class="hb-stat"><div class="hb-stat-n">'+Math.round(totExt/Math.max(todosMeses.filter(function(m){return externosMap[m]&&externosMap[m].env>0;}).length,1))+'</div><div class="hb-stat-l">Prom. externos/mes</div></div>'
-    +'<div class="hb-stat"><div class="hb-stat-n">'+(totAll>0?Math.round(totInt/totAll*100)+'%':'—')+'</div><div class="hb-stat-l">% internos del total</div></div>'
-    +'</div>'
-    +'</div>';
-}
-
-// ── RENDER EXTERNOS ─────────────────────────────────────────
-function renderExterno(mes){
-  var el=document.getElementById('srv-externos-body');
-  if(!el)return;
-  var rows=mes?monitoreoData.filter(function(r){return r.mes===mes.toUpperCase().trim();}):monitoreoData;
-  if(!rows.length){el.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8;font-size:.8rem">Sin datos para este período</div>';return;}
-  var totalEnv=rows.reduce(function(s,r){return s+r.enviados;},0);
-  var avgTiempo=rows.length>0?rows.reduce(function(s,r){return s+r.tiempoMediano;},0)/rows.filter(function(r){return r.tiempoMediano>0;}).length:0;
-  var tiempoStr=isNaN(avgTiempo)||avgTiempo<=0?'—':Math.round(avgTiempo)+' min';
-  el.innerHTML='<div style="display:flex;gap:16px;padding:20px;flex-wrap:wrap">'
-    +'<div style="flex:1;min-width:160px;background:#f0fdf4;border-radius:12px;padding:18px 22px;text-align:center">'
-    +'<div style="font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#16a34a;margin-bottom:6px">📨 Total Enviados</div>'
-    +'<div style="font-size:2rem;font-weight:800;color:#0d2b4e;line-height:1">'+totalEnv+'</div>'
-    +'<div style="font-size:.65rem;color:#94a3b8;margin-top:4px">tickets este período</div>'
-    +'</div>'
-    +'<div style="flex:1;min-width:160px;background:#fff7ed;border-radius:12px;padding:18px 22px;text-align:center">'
-    +'<div style="font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#ea580c;margin-bottom:6px">⏱️ Tiempo Mediano</div>'
-    +'<div style="font-size:2rem;font-weight:800;color:#0d2b4e;line-height:1">'+tiempoStr+'</div>'
-    +'<div style="font-size:.65rem;color:#94a3b8;margin-top:4px">promedio de atención</div>'
-    +'</div>'
-    +(rows.length>1?'<div style="flex:2;min-width:280px;background:#fafafa;border-radius:12px;padding:14px 18px">'
-    +'<div style="font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b;margin-bottom:10px">Detalle por mes</div>'
-    +'<table style="width:100%;border-collapse:collapse;font-size:.78rem">'
-    +'<thead><tr><th style="text-align:left;padding:4px 8px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">Mes</th>'
-    +'<th style="text-align:center;padding:4px 8px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">Enviados</th>'
-    +'<th style="text-align:center;padding:4px 8px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">T. Mediano</th></tr></thead>'
-    +'<tbody>'+rows.map(function(r){return'<tr>'
-    +'<td style="padding:5px 8px;color:#0d2b4e;font-weight:600;text-transform:capitalize">'+r.mes.charAt(0)+r.mes.slice(1).toLowerCase()+'</td>'
-    +'<td style="padding:5px 8px;text-align:center;color:#16a34a;font-weight:700">'+r.enviados+'</td>'
-    +'<td style="padding:5px 8px;text-align:center;color:#ea580c;font-weight:700">'+(r.tiempoMediano>0?r.tiempoMediano+' min':'—')+'</td>'
-    +'</tr>';}).join('')+'</tbody></table></div>':'')
-    +'</div>';
-}
-
-// ── RENDER CAPACITACIONES POR CLIENTE ───────────────────────
-function renderCapacClientes(mes){
-  var tbody=document.getElementById('srv-capac-clientes-body');
-  if(!tbody)return;
-  var rows=mes?capacitacionesData.filter(function(r){
-    var mesNorm=mes.toUpperCase().trim();
-    var mesesAbr={'ENE':'ENERO','FEB':'FEBRERO','MAR':'MARZO','ABR':'ABRIL','MAY':'MAYO','JUN':'JUNIO','JUL':'JULIO','AGO':'AGOSTO','SEP':'SEPTIEMBRE','OCT':'OCTUBRE','NOV':'NOVIEMBRE','DIC':'DICIEMBRE'};
-    return r.mes===mesNorm||r.mes===(mesesAbr[mesNorm]||mesNorm);
+  // Top clientes acumulado (todos los meses o filtrado)
+  var capRows=mes?capacitacionesData.filter(function(r){
+    var m=mes.toUpperCase().trim();
+    var abr={'ENE':'ENERO','FEB':'FEBRERO','MAR':'MARZO','ABR':'ABRIL','MAY':'MAYO','JUN':'JUNIO','JUL':'JULIO','AGO':'AGOSTO','SEP':'SEPTIEMBRE','OCT':'OCTUBRE','NOV':'NOVIEMBRE','DIC':'DICIEMBRE'};
+    return r.mes===m||(abr[r.mes]===m)||(abr[m]&&abr[m]===r.mes);
   }):capacitacionesData;
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:24px;font-size:.8rem">Sin capacitaciones en este período</td></tr>';return;}
-  // Group by cliente
+
   var map={};
-  rows.forEach(function(r){if(!map[r.cliente])map[r.cliente]=0;map[r.cliente]+=r.total;});
-  var sorted=Object.keys(map).map(function(c){return{cliente:c,total:map[c]};}).sort(function(a,b){return b.total-a.total;});
-  var totalAll=sorted.reduce(function(s,r){return s+r.total;},0);
-  tbody.innerHTML=sorted.map(function(r,i){
-    var pct=totalAll>0?Math.round(r.total/totalAll*100):0;
-    var color=i===0?'#2563a8':i===1?'#0891b2':i===2?'#7c3aed':'#64748b';
-    return'<tr>'
-    +'<td style="font-weight:700;color:'+color+'">'+(i+1)+'</td>'
-    +'<td style="text-align:left;font-weight:600;color:#0d2b4e">'+r.cliente+'</td>'
-    +'<td><div style="display:flex;align-items:center;gap:8px;justify-content:center">'
-    +'<div style="background:'+color+'20;border-radius:99px;height:8px;flex:1;max-width:80px;overflow:hidden">'
-    +'<div style="background:'+color+';height:100%;width:'+pct+'%;border-radius:99px"></div></div>'
-    +'<span style="font-weight:800;color:'+color+';min-width:24px">'+r.total+'</span>'
-    +'</div></td>'
-    +'</tr>';
+  capRows.forEach(function(r){if(!map[r.cliente])map[r.cliente]=0;map[r.cliente]+=r.total;});
+  var ranked=Object.keys(map).map(function(c){return{c:c,n:map[c]};}).sort(function(a,b){return b.n-a.n;});
+  var totalCap=ranked.reduce(function(s,r){return s+r.n;},0);
+  var maxN=ranked.length?ranked[0].n:1;
+
+  var rankColors=['#2563a8','#0891b2','#7c3aed','#ea580c','#16a34a','#64748b'];
+  var medalColors=[{bg:'#fef3c7',c:'#d97706'},{bg:'#f1f5f9',c:'#64748b'},{bg:'#fef9c3',c:'#ca8a04'}];
+
+  // Donut SVG simple
+  var pct=totalEnc>0?Math.min(califVal/100,1):0;
+  var r=32,cx=40,cy=40,circ=2*Math.PI*r;
+  var dash=pct*circ,gap=circ-dash;
+  var donutSvg='<svg width="80" height="80" viewBox="0 0 80 80">'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#f1f5f9" stroke-width="9"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(cumple?'#10b981':'#f87171')+'" stroke-width="9"'
+    +' stroke-dasharray="'+dash.toFixed(1)+' '+gap.toFixed(1)+'" stroke-linecap="round"'
+    +' transform="rotate(-90 '+cx+' '+cy+')"/>'
+    +'<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="11" font-weight="900" fill="#0d2b4e">'+califStr+'</text>'
+    +'</svg>';
+
+  var rankRows=ranked.slice(0,6).map(function(r,i){
+    var pctBar=maxN>0?Math.round(r.n/maxN*100):0;
+    var col=rankColors[i]||'#94a3b8';
+    var medal=i<3?'<div class="cp-rank-num" style="background:'+medalColors[i].bg+';color:'+medalColors[i].c+'">'+['🥇','🥈','🥉'][i]+'</div>':'<div class="cp-rank-num" style="background:#f8fafc;color:#94a3b8">'+(i+1)+'</div>';
+    return'<div class="cp-rank-item">'
+      +medal
+      +'<div class="cp-rank-name" title="'+r.c+'">'+r.c+'</div>'
+      +'<div class="cp-rank-bar-wrap"><div class="cp-rank-bar" style="width:'+pctBar+'%;background:'+col+'"></div></div>'
+      +'<div class="cp-rank-val" style="color:'+col+'">'+r.n+'</div>'
+      +'</div>';
   }).join('');
+
+  var emptyRank='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:.78rem">Sin capacitaciones en este período</div>';
+
+  el.innerHTML='<div class="cp-wrap">'
+    +'<div class="cp-header">'
+    +'<div class="cp-header-title">📚 Capacitaciones</div>'
+    +'<div class="cp-header-score">'
+    +'<div class="cp-header-score-val">'+califStr+'</div>'
+    +'<div class="cp-header-score-lbl">Satisfacción · '+(totalEnc>0?totalEnc+' encuestas':'sin encuestas')+'</div>'
+    +'<div class="cp-header-badge" style="'+badgeStyle+'">'+badgeTxt+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="cp-body">'
+    +'<div class="cp-left">'
+    +'<div class="cp-section-lbl">Satisfacción del período</div>'
+    +'<div class="cp-donut-wrap">'+donutSvg+'<div class="cp-donut-info"><div class="cp-donut-total">'+totalEnc+'</div><div class="cp-donut-sub">encuestas respondidas</div></div></div>'
+    +'<div class="cp-section-lbl" style="margin-top:4px">Total capacitaciones</div>'
+    +'<div style="font-size:1.6rem;font-weight:900;color:#0d2b4e;line-height:1">'+totalCap+'</div>'
+    +'<div style="font-size:.65rem;color:#94a3b8;margin-top:3px">'+ranked.length+' cliente'+(ranked.length!==1?'s':'')+'</div>'
+    +'</div>'
+    +'<div class="cp-right">'
+    +'<div class="cp-section-lbl">🏆 Ranking de clientes</div>'
+    +(ranked.length?rankRows:emptyRank)
+    +'</div>'
+    +'</div>'
+    +'</div>';
 }
 
-// ── GRÁFICA TICKETS INTERNOS POR MES ────────────────────────
-function renderGraficaInternos(mes){
-  var cached=Object.keys(localStorage).filter(function(k){return k.startsWith('zoho_cache_');});
-  var dataByMes=[];
-  cached.forEach(function(k){
-    try{
-      var obj=JSON.parse(localStorage.getItem(k));
-      if(!obj||!obj.agentes)return;
-      var mesName=k.replace('zoho_cache_','').toUpperCase();
-      var total=obj.agentes.reduce(function(s,a){return s+(a.tickets||0);},0);
-      if(total>0)dataByMes.push({mes:mesName,total:total});
-    }catch(e){}
+// ── PANEL HISTÓRICO TICKETS EXTERNOS ─────────────────────────
+function renderExternosPanel(mes){
+  var el=document.getElementById('srv-externos-panel');
+  if(!el)return;
+  if(!monitoreoData.length){el.innerHTML='';return;}
+
+  // Ordenar todos los meses con datos
+  var byMes={};
+  monitoreoData.forEach(function(r){
+    if(!byMes[r.mes])byMes[r.mes]={env:0,tmeds:[]};
+    byMes[r.mes].env+=r.enviados;
+    if(r.tiempoMediano>0)byMes[r.mes].tmeds.push(r.tiempoMediano);
   });
-  dataByMes.sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
-  if(!dataByMes.length){var el=document.getElementById('nc-internos-chart');if(el)el.innerHTML='';return;}
-  buildNcChart({
-    containerId:'nc-internos-chart',
-    title:'🔵 Tickets Internos por Mes',
-    data:dataByMes.map(function(r){return{label:r.mes.charAt(0)+r.mes.slice(1,3).toLowerCase(),primary:r.total,pct:null,_mes:r.mes};}),
-    labelP:'Tickets Internos',
-    singleBar:true,
-    activeMes:mes
-  });
+  var meses=Object.keys(byMes).filter(function(m){return MESES_ORD.indexOf(m)>=0;}).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
+  if(!meses.length){el.innerHTML='';return;}
+
+  var maxVal=Math.max.apply(null,meses.map(function(m){return byMes[m].env;}));
+  maxVal=Math.max(maxVal,1);
+  var CHART_H=110;
+  var mesActivo=(mes||'').toUpperCase().trim()||meses[meses.length-1];
+
+  // KPIs del mes activo
+  var actData=byMes[mesActivo]||{env:0,tmeds:[]};
+  var actEnv=actData.env;
+  var actTmed=actData.tmeds.length?Math.round(actData.tmeds.reduce(function(s,v){return s+v;},0)/actData.tmeds.length):0;
+  var totAcum=meses.reduce(function(s,m){return s+byMes[m].env;},0);
+  var avgTmedAll=0,tmedCnt=0;
+  meses.forEach(function(m){byMes[m].tmeds.forEach(function(t){avgTmedAll+=t;tmedCnt++;});});
+  var avgTmedStr=tmedCnt>0?Math.round(avgTmedAll/tmedCnt)+' min':'—';
+
+  var barsHtml=meses.map(function(m){
+    var d=byMes[m];
+    var h=Math.max(Math.round((d.env/maxVal)*CHART_H),d.env>0?6:0);
+    var tmed=d.tmeds.length?Math.round(d.tmeds.reduce(function(s,v){return s+v;},0)/d.tmeds.length):0;
+    var isAct=m===mesActivo;
+    var label=m.charAt(0)+m.slice(1,3).toLowerCase();
+    return'<div class="ext-month-col'+(isAct?' active':'')+'">'
+      +'<div class="ext-bar" style="height:'+h+'px" title="'+m+': '+d.env+' tickets'+(tmed?' · '+tmed+' min':'')+'"></div>'
+      +'<div class="ext-x">'+label+'</div>'
+      +'<div class="ext-val">'+d.env+'</div>'
+      +(tmed?'<div class="ext-tmed">'+tmed+'m</div>':'')
+      +'</div>';
+  }).join('');
+
+  el.innerHTML='<div class="ext-wrap">'
+    +'<div class="ext-header">'
+    +'<div class="ext-header-title">🟢 Tickets Externos (cim@) — Histórico</div>'
+    +'<div class="ext-kpis">'
+    +'<div class="ext-kpi"><div class="ext-kpi-val">'+actEnv+'</div><div class="ext-kpi-lbl">'+mesActivo.charAt(0)+mesActivo.slice(1).toLowerCase()+'</div></div>'
+    +'<div class="ext-kpi"><div class="ext-kpi-val">'+(actTmed?actTmed+' min':'—')+'</div><div class="ext-kpi-lbl">T. mediano</div></div>'
+    +'<div class="ext-kpi"><div class="ext-kpi-val">'+totAcum.toLocaleString()+'</div><div class="ext-kpi-lbl">Acumulado</div></div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="ext-body">'
+    +'<div class="ext-chart-lbl">Enviados por mes · barra activa = mes seleccionado</div>'
+    +'<div class="ext-months" style="height:'+(CHART_H+52)+'px">'+barsHtml+'</div>'
+    +'<div class="ext-legend">'
+    +'<div class="ext-leg-item"><div class="ext-leg-dot" style="background:#059669"></div>Mes activo</div>'
+    +'<div class="ext-leg-item"><div class="ext-leg-dot" style="background:#d1fae5"></div>Otros meses</div>'
+    +'<div class="ext-leg-item" style="color:#f59e0b">⏱ T.med = tiempo mediano de atención</div>'
+    +'<div class="ext-leg-item" style="margin-left:auto;font-weight:700;color:#0d2b4e">Prom. anual: '+avgTmedStr+'</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
 }
 
 function renderGraficaCapac(mes){

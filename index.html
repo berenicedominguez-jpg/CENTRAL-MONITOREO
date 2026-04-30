@@ -495,7 +495,7 @@
       </div>
       <div class="rd-stat-row">
         <div class="rd-stat-card">
-          <div class="rd-stat-lbl">🎫 Total Tickets</div>
+          <div class="rd-stat-lbl">🎫 Total Tickets Internos</div>
           <div class="rd-stat-num" id="srv-total">—</div>
           <div style="font-size:.67rem;color:#94a3b8">este período</div>
         </div>
@@ -511,9 +511,9 @@
         </div>
       </div>
       <div class="rd-wrap">
-        <div class="rd-wrap-head"><span class="rd-wrap-title">🎫 Tickets por agente</span></div>
+        <div class="rd-wrap-head"><span class="rd-wrap-title">🎫 Tickets Internos por agente</span></div>
         <table class="rd-tbl">
-          <thead><tr class="rd-top"><th style="width:36px">#</th><th style="text-align:left">Agente</th><th>Tickets</th><th>% del total</th><th>Tiempo prom. respuesta</th></tr></thead>
+          <thead><tr class="rd-top"><th style="width:36px">#</th><th style="text-align:left">Agente</th><th>Tickets Internos</th><th>% del total</th><th>Tiempo prom. respuesta</th></tr></thead>
           <tbody id="srv-agentes-body"><tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:28px">⏳ Cargando agentes...</td></tr></tbody>
         </table>
       </div>
@@ -532,7 +532,7 @@
 
       <!-- MONITORISTAS -->
       <div class="rd-section-head rd-sh-blue">👥 Monitoristas</div>
-      <div class="rd-score-note rd-score-note" style="font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0">Ranking: Score = (% Efectividad recuperaciones × 0.5) + (% Participación tickets × 0.5)</div>
+      <div class="rd-score-note rd-score-note" style="font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0">Ranking: Score = (% Efectividad recuperaciones × 0.5) + (% Participación tickets internos × 0.5)</div>
       <div class="rd-wrap" style="margin-bottom:22px;overflow-x:auto">
         <table class="rd-tbl" style="min-width:800px">
           <thead>
@@ -540,7 +540,7 @@
               <th rowspan="2" style="width:36px;text-align:center;vertical-align:middle">#</th>
               <th rowspan="2" style="text-align:left;min-width:140px;vertical-align:middle">Monitorista</th>
               <th colspan="4" class="rd-gh-blue">Recuperaciones</th>
-              <th colspan="3" class="rd-gh-green">Tickets</th>
+              <th colspan="3" class="rd-gh-green">Tickets Internos</th>
               <th rowspan="2" class="rd-gh-amber" style="vertical-align:middle;min-width:70px">Score</th>
             </tr>
             <tr class="rd-sub">
@@ -556,7 +556,7 @@
 
       <!-- ESPECIALISTAS -->
       <div class="rd-section-head rd-sh-green">⭐ Especialistas</div>
-      <div class="rd-score-note" style="font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0">Ranking: Score = Tickets atendidos ÷ Tiempo promedio de respuesta (min) — mayor productividad = mejor posición</div>
+      <div class="rd-score-note" style="font-size:.65rem;color:#64748b;margin-bottom:10px;padding:6px 12px;background:#f8fafc;border-radius:8px;border-left:3px solid #e2e8f0">Ranking: Score = Tickets Internos atendidos ÷ Tiempo promedio de respuesta (min) — mayor productividad = mejor posición</div>
       <div class="rd-wrap" style="margin-bottom:22px;overflow-x:auto">
         <table class="rd-tbl" style="min-width:800px">
           <thead>
@@ -564,7 +564,7 @@
               <th rowspan="2" style="width:36px;text-align:center;vertical-align:middle">#</th>
               <th rowspan="2" style="text-align:left;min-width:140px;vertical-align:middle">Especialista</th>
               <th colspan="4" class="rd-gh-blue">Recuperaciones</th>
-              <th colspan="3" class="rd-gh-green">Tickets</th>
+              <th colspan="3" class="rd-gh-green">Tickets Internos</th>
               <th rowspan="2" class="rd-gh-amber" style="vertical-align:middle;min-width:70px">Score</th>
             </tr>
             <tr class="rd-sub">
@@ -595,7 +595,7 @@
         <div class="pend-stat" style="border-top-color:#f59e0b"><div class="ps-icon" style="background:#fef3c7">⚠️</div><div class="ps-val" id="ps-total">—</div><div class="ps-lbl">Total Incompletos</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-total" style="width:100%;background:#f59e0b"></div></div></div>
         <div class="pend-stat" style="border-top-color:#25D366"><div class="ps-icon" style="background:#dcfce7">📱</div><div class="ps-val" id="ps-sin-whats">—</div><div class="ps-lbl">Sin WhatsApp</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-whats" style="width:0%;background:#25D366"></div></div></div>
         <div class="pend-stat" style="border-top-color:#FBBC04"><div class="ps-icon" style="background:#fef9c3">📁</div><div class="ps-val" id="ps-sin-drive">—</div><div class="ps-lbl">Sin Carpeta Drive</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-drive" style="width:0%;background:#FBBC04"></div></div></div>
-        <div class="pend-stat" style="border-top-color:#8b5cf6"><div class="ps-icon" style="background:#f5f3ff">🎫</div><div class="ps-val" id="ps-sin-ticket">—</div><div class="ps-lbl">Sin Ticket Zoho</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-ticket" style="width:0%;background:#8b5cf6"></div></div></div>
+        <div class="pend-stat" style="border-top-color:#8b5cf6"><div class="ps-icon" style="background:#f5f3ff">🎫</div><div class="ps-val" id="ps-sin-ticket">—</div><div class="ps-lbl">Sin Ticket Interno Zoho</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-ticket" style="width:0%;background:#8b5cf6"></div></div></div>
         <div class="pend-stat" style="border-top-color:#0ea5e9"><div class="ps-icon" style="background:#e0f2fe">📋</div><div class="ps-val" id="ps-sin-reporte">—</div><div class="ps-lbl">Sin Reporte</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-reporte" style="width:0%;background:#0ea5e9"></div></div></div>
         <div class="pend-stat" style="border-top-color:#ef4444"><div class="ps-icon" style="background:#fee2e2">✉️</div><div class="ps-val" id="ps-sin-correos">—</div><div class="ps-lbl">Sin Correos</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-correos" style="width:0%;background:#ef4444"></div></div></div>
         <div class="pend-stat" style="border-top-color:#f59e0b"><div class="ps-icon" style="background:#fef3c7">🖼️</div><div class="ps-val" id="ps-sin-evidencia">—</div><div class="ps-lbl">Sin Evidencias</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-evidencia" style="width:0%;background:#f59e0b"></div></div></div>
@@ -613,7 +613,7 @@
             <th class="col-fixed col-num">#</th><th class="col-fixed col-caso">Caso</th>
             <th class="col-fixed col-cliente">Cliente</th><th class="col-fixed col-unidad">Unidad</th>
             <th class="col-check">📱 WhatsApp</th><th class="col-check">📁 Drive</th>
-            <th class="col-check">🎫 Ticket</th><th class="col-check-lg">📋 Reporte</th>
+            <th class="col-check">🎫 Ticket Interno</th><th class="col-check-lg">📋 Reporte</th>
             <th class="col-check">✉️ Correos</th><th class="col-check">🖼️ Evidencias</th>
           </tr></thead>
           <tbody id="pend-tbody"><tr><td colspan="10" class="pend-empty">⏳ Cargando datos...</td></tr></tbody>
@@ -881,7 +881,7 @@ var CUATRIMESTRES=[
   {id:'C3',label:'C3 · Sep–Dic',meses:['SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE']}
 ];
 var KPI_CONFIG=[
-  {id:'tickets',icon:'🎫',iconBg:'#eff6ff',nombre:'Tickets / Tiempo de Respuesta',meta_label:'≤ 15 min',peso:'50%',meta:15,tipo:'tiempo'},
+  {id:'tickets',icon:'🎫',iconBg:'#eff6ff',nombre:'Tickets Internos / Tiempo de Respuesta',meta_label:'≤ 15 min',peso:'50%',meta:15,tipo:'tiempo'},
   {id:'robos',icon:'🚨',iconBg:'#fee2e2',nombre:'Recuperaciones Robos',meta_label:'≥ 90%',peso:'15%',meta:90,tipo:'mayor'},
   {id:'abusos',icon:'⚠️',iconBg:'#fef3c7',nombre:'Recuperaciones Abuso de Confianza',meta_label:'≥ 80%',peso:'10%',meta:80,tipo:'mayor'},
   {id:'creditos',icon:'💳',iconBg:'#f0fdf4',nombre:'Recuperaciones Créditos',meta_label:'≥ 90%',peso:'10%',meta:90,tipo:'mayor'},
@@ -1134,7 +1134,7 @@ async function loadAll(){
       if(cachedActual.avg) zohoHistorial[mesActual]=cachedActual.avg;
       var horasAtras=Math.round((Date.now()-(cachedActual.ts||0))/3600000);
       dot.className='dot ok';
-      stxt.textContent='✅ Datos cargados · Tickets desde caché ('+(horasAtras===0?'hace menos de 1h':'hace ~'+horasAtras+'h')+')';
+      stxt.textContent='✅ Datos cargados · Tickets Internos desde caché ('+(horasAtras===0?'hace menos de 1h':'hace ~'+horasAtras+'h')+')';
     } else {
       await new Promise(function(resolve){
         fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesActual)).then(function(r){return r.json();}).then(function(json){
@@ -1287,7 +1287,7 @@ async function renderResumen(){
       if(k.id==='tickets'){
         // Buscar total de tickets del mes específico desde zohoHistorialTotal
         var totalTk=zohoHistorialTotal[m]||0;
-        if(totalTk>0) detalleHtml='<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)">'+totalTk+' tickets</span></div>';
+        if(totalTk>0) detalleHtml='<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)">'+totalTk+' tickets internos</span></div>';
       } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
         var kw=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
         var rowsMes=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw);});
@@ -1588,7 +1588,7 @@ async function loadZohoTickets(mes){
     var meta=15,pct=avgMin>0?Math.min((meta/avgMin)*100,100):0,good=avgMin>0&&avgMin<=meta,label=avgMin>0?fmtMin(avgMin):'—';
     var vt=document.getElementById('v-tickets'),pbt=document.getElementById('pb-tickets'),bt=document.getElementById('b-tickets'),ct=document.getElementById('c-tickets');
     if(vt)vt.textContent=label;
-    if(dt)dt.textContent='Total: '+totalTickets+' tickets';
+    if(dt)dt.textContent='Total: '+totalTickets+' tickets internos';
     if(pbt){pbt.style.width=pct+'%';pbt.style.background=good?'#0f6e56':'#a32d2d';}
     if(bt){bt.className='rd-badge '+(good?'rd-bok':'rd-bfail');bt.textContent=good?'✅ Cumple meta':'❌ Sobre meta';}
     if(ct)ct.className='rd-kpi-card '+(good?'gn':'rd');
@@ -1846,7 +1846,7 @@ function exportPDF(){
       var detalleHtml='';
       if(k.id==='tickets'){
         var totalTk=zohoAgentes.length?zohoAgentes.reduce(function(s,a){return s+a.tickets;},0):0;
-        if(totalTk>0) detalleHtml='<div style="margin-top:2px"><span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:#f1f5f9;color:#64748b">'+totalTk+' tickets</span></div>';
+        if(totalTk>0) detalleHtml='<div style="margin-top:2px"><span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:#f1f5f9;color:#64748b">'+totalTk+' tickets internos</span></div>';
       } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
         var kw2=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
         var rowsMesPdf=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw2);});

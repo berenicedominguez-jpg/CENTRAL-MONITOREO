@@ -1400,11 +1400,9 @@ async function renderResumen(){
         var tmedExt=0,tmedCnt=0;
         extRows.forEach(function(r){if(r.tiempoMediano>0){tmedExt+=r.tiempoMediano;tmedCnt++;}});
         var tmedStr=tmedCnt>0?Math.round(tmedExt/tmedCnt)+' min':'—';
-        detalleHtml='<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;justify-content:center">'
-          +(totalTk>0?'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#eff6ff;color:#2563a8">🔵 '+totalTk+' internos</span>':'')
-          +(totalExt>0?'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#f0fdf4;color:#16a34a">🟢 '+totalExt+' externos</span>':'')
-          +(totalExt>0&&tmedStr!=='—'?'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#fefce8;color:#ca8a04">⏱ '+tmedStr+'</span>':'')
-          +'</div>';
+        detalleHtml=''
+          +(totalTk>0?'<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#eff6ff;color:#2563a8">🔵 '+totalTk+' tickets internos</span></div>':'')
+          +(totalExt>0?'<div style="margin-top:2px;display:flex;align-items:center;gap:3px;justify-content:center"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#f0fdf4;color:#16a34a">🟢 '+totalExt+' tickets externos</span>'+(tmedStr!=='—'?'<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#fefce8;color:#ca8a04">⏱ '+tmedStr+'</span>':'')+'</div>':'');
       } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
         var kw=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
         var rowsMes=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw);});

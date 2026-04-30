@@ -1641,7 +1641,11 @@ async function loadZohoTickets(mes){
     if(ct)ct.className='rd-kpi-card '+(good?'gn':'rd');
     var sfrt=document.getElementById('srv-frt'),stot=document.getElementById('srv-total');
     if(sfrt)sfrt.textContent=label;
-    if(stot)stot.textContent=totalTickets||'—';
+    // srv-total muestra internos+externos; srv-total-internos muestra solo internos
+    var elInt2=document.getElementById('srv-total-internos');
+    if(elInt2)elInt2.textContent=totalTickets||'—';
+    var extVal2=getExternoVal(currentServicioMes);
+    if(stot)stot.textContent=(totalTickets+extVal2)||'—';
     if(!zohoAgentes.length){zohoAgentes=agentes;renderAgentesZoho();renderDesempeno(mes);}
     if(currentPage==='resumen')renderResumen();
   }catch(e){if(dt)dt.textContent='⚠️ '+e.message;resetKPI('tickets');}

@@ -420,6 +420,7 @@
   <div class="hright">
     <div class="mbadge" id="mbadge">—</div>
     <button class="rbtn" id="rbtn" onclick="loadAll()">🔄 Actualizar</button>
+    <button class="rbtn" id="force-refresh-btn" onclick="forceRefreshAllCache()" title="Borra el caché de todos los meses y recarga datos frescos" style="background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.5)" onmouseover="this.style.background='rgba(239,68,68,.4)'" onmouseout="this.style.background='rgba(239,68,68,.25)'">🗑️ Forzar recarga</button>
   </div>
 </header>
 <div class="sbar"><span class="dot spin" id="sdot"></span><span id="stxt">Conectando con Google Sheets...</span></div>
@@ -942,6 +943,36 @@ function zohoCacheSet(mes, avg, agentes, totalTickets){
 // Invalida solo el mes actual (útil si quieres forzar refresh manual)
 function zohoCacheInvalidateMesActual(){
   try{ localStorage.removeItem(zohoCacheKey(getMesActualFrontend())); }catch(e){}
+}
+
+// Fuerza recarga completa: borra caché de TODOS los meses y recarga
+function forceRefreshAllCache(){
+  var btn=document.getElementById('force-refresh-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Limpiando...';}
+  try{
+    // Borrar caché de todos los meses conocidos
+    MESES_ORD.forEach(function(mes){
+      try{ localStorage.removeItem(zohoCacheKey(mes)); }catch(e){}
+    });
+    // Borrar cualquier otra clave zoho_cache_* que pudiera existir
+    var toDelete=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.indexOf('zoho_cache_')===0) toDelete.push(k);
+    }
+    toDelete.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
+  }catch(e){}
+  // Resetear estado en memoria
+  zohoAgentes=[];
+  zohoHistorial={};
+  // Recargar todos los datos
+  loadAll();
+  if(btn){
+    setTimeout(function(){
+      btn.disabled=false;
+      btn.textContent='🗑️ Forzar recarga';
+    },3000);
+  }
 }
 
 /* Merge de datos delta sobre caché existente.

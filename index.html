@@ -720,10 +720,9 @@
             <th class="col-fixed col-num">#</th><th class="col-fixed col-caso">Caso</th>
             <th class="col-fixed col-cliente">Cliente</th><th class="col-fixed col-unidad">Unidad</th>
             <th class="col-check">📱 WhatsApp</th><th class="col-check">📁 Drive</th>
-            <th class="col-check">🎫 Ticket Interno</th><th class="col-check-lg">📋 Reporte</th>
-            <th class="col-check">✉️ Correos</th><th class="col-check">🖼️ Evidencias</th>
+            <th class="col-check">🎫 Ticket Interno</th>            <th class="col-check">✉️ Correos</th><th class="col-check">🖼️ Evidencias</th>
           </tr></thead>
-          <tbody id="pend-tbody"><tr><td colspan="10" class="pend-empty">⏳ Cargando datos...</td></tr></tbody>
+          <tbody id="pend-tbody"><tr><td colspan="9" class="pend-empty">⏳ Cargando datos...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1257,11 +1256,13 @@ async function loadAll(){
     }
     var meses=[...new Set(recData.map(function(r){return r.mes;}).concat(robosData.map(function(r){return r.mes;})))].filter(Boolean).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
     poblarSelectoresMes(meses);
-    poblarFiltrosPendientes();
     pendientesData=robosData.filter(function(r){return r.comentarios==='INCOMPLETO';});
+    poblarFiltrosPendientes();
     activeCuatri=getCuatriActual();
     buildCuatriTabs();
     loadHistoricos();loadActividades();
+    // Forzar render de pendientes para que la tabla cargue aunque ya estuviera en esa página
+    renderPendientes();
     var mesActual=getPageMes('men')||getMesActualFrontend();
     await loadFrtFallback(mesActual);
     await loadZohoHistorial();
@@ -1389,8 +1390,8 @@ async function renderResumen(){
   var mActSet=new Set();
   KPI_CONFIG.forEach(function(k){var det=computeKpiValoresPorMes(k.id,k.tipo,k.meta,mesesTerminados);mesesTerminados.forEach(function(m){if(det[m]&&det[m].val!==null)mActSet.add(m);});});
   var proyeccion=Math.min((ptsAcumulados/(mActSet.size||1))*totalMeses,100);
-  document.getElementById('rb-kpis-ok').textContent=ptsAcumulados.toFixed(2)+'%';
-  document.getElementById('rb-kpis-fail').textContent=proyeccion.toFixed(2)+'%';
+  var _rko=document.getElementById('rb-kpis-ok');if(_rko)_rko.textContent=ptsAcumulados.toFixed(2)+'%';
+  var _rkf=document.getElementById('rb-kpis-fail');if(_rkf)_rkf.textContent=proyeccion.toFixed(2)+'%';
 
   var html='';
   KPI_CONFIG.forEach(function(k){
@@ -1567,8 +1568,8 @@ function renderServicio(mes){
   currentServicioMes=mes||'';
   var mesKey=mes||getMesActualFrontend();
   var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
-  if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);document.getElementById('srv-capac').textContent=avg.toFixed(1)+'%';}
-  else document.getElementById('srv-capac').textContent='—';
+  if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);var _sc2=document.getElementById('srv-capac');if(_sc2)_sc2.textContent=avg.toFixed(1)+'%';}
+  else{var _sc=document.getElementById('srv-capac');if(_sc)_sc.textContent='—';}
   renderGraficaCapac(mes);renderGraficaCarso();renderCapacPanel(mes);renderExternosPanel(mes);
   // Verificar si zohoAgentes corresponde al mes solicitado
   var cachedMes=zohoCacheGet(mesKey);
@@ -1842,17 +1843,30 @@ function updateExterno(mes){
 }
 
 async function loadMonitoreoExterno(){
-  try{
-    var url=API+'?sheet=MONITOREO';
-    var json=await fetch(url).then(function(r){return r.json();});
-    if(json.error){console.warn('MONITOREO error:',json.error);return;}
-    monitoreoData=(json.rows||[]).map(function(r){
-      var mes=String(r['mes']||'').toUpperCase().trim();
-      var env=parseFloat(r['enviados por cim@']||r['enviados']||0)||0;
-      var tmed=parseFloat(r['tiempo mediano (min)']||r['tiempo mediano']||0)||0;
-      return{mes:mes,enviados:env,tiempoMediano:tmed};
-    }).filter(function(r){return r.mes&&r.enviados>0;});
-  }catch(e){console.warn('Error cargando monitoreoData:',e);}
+  var MAX_REINTENTOS=3,DELAY=1500;
+  for(var intento=1;intento<=MAX_REINTENTOS;intento++){
+    try{
+      var url=API+'?sheet=MONITOREO';
+      var resp=await fetch(url);
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      var json=await resp.json();
+      if(json.error){console.warn('MONITOREO sheet error:',json.error);return;}
+      monitoreoData=(json.rows||[]).map(function(r){
+        var mes=String(r['mes']||'').toUpperCase().trim();
+        var env=parseFloat(r['enviados por cim@']||r['enviados']||0)||0;
+        var tmed=parseFloat(r['tiempo mediano (min)']||r['tiempo mediano']||0)||0;
+        return{mes:mes,enviados:env,tiempoMediano:tmed};
+      }).filter(function(r){return r.mes&&r.enviados>0;});
+      return;
+    }catch(e){
+      if(intento<MAX_REINTENTOS){
+        console.warn('MONITOREO intento '+intento+' fallido, reintentando en '+(DELAY*intento)+'ms...');
+        await new Promise(function(res){setTimeout(res,DELAY*intento);});
+      }else{
+        console.warn('Error cargando monitoreoData despues de '+MAX_REINTENTOS+' intentos:',e.message);
+      }
+    }
+  }
 }
 
 function renderAgentesZoho(){
@@ -1864,7 +1878,7 @@ function renderAgentesZoho(){
   updateExterno(currentServicioMes);
   // Total = internos + externos
   var extVal=getExternoVal(currentServicioMes);
-  document.getElementById('srv-total').textContent=(total+extVal)||'—';
+  var _svt=document.getElementById('srv-total');if(_svt)_svt.textContent=(total+extVal)||'—';
   var frt=getGlobalFrt(zohoAgentes);
   var frtEl=document.getElementById('srv-frt');
   frtEl.textContent=frt?fmtMin(frt):'—';
@@ -2075,7 +2089,7 @@ function poblarFiltrosPendientes(){
 }
 
 function renderPendientes(){
-  if(!pendientesData.length&&robosData.length===0){document.getElementById('pend-tbody').innerHTML='<tr><td colspan="10" class="pend-empty">⏳ Cargando datos...</td></tr>';return;}
+  if(!pendientesData.length&&robosData.length===0){document.getElementById('pend-tbody').innerHTML='<tr><td colspan="9" class="pend-empty">⏳ Cargando datos...</td></tr>';return;}
   var pfMes=document.getElementById('pf-mes').value;
   var pfPlat=document.getElementById('pf-plataforma').value;
   var pfBus=(document.getElementById('pf-buscar').value||'').toLowerCase().trim();
@@ -2084,27 +2098,24 @@ function renderPendientes(){
   if(pfPlat)rows=rows.filter(function(r){return r.plataforma===pfPlat;});
   if(pfBus)rows=rows.filter(function(r){return(r.monitorista||'').toLowerCase().includes(pfBus)||(r.tipo||'').toLowerCase().includes(pfBus)||(r.plataforma||'').toLowerCase().includes(pfBus);});
   var esMalo=function(val){var v=String(val||'').toUpperCase().trim();return!v||v===''||v==='-'||v==='NO'||v.indexOf('INCOMPLETA')!==-1||v.indexOf('INCOMPLETO')!==-1;};
-  var esMaloReporte=function(val){var v=String(val||'').toUpperCase().trim();if(!v||v===''||v==='-')return true;return['FALTA TICKET','FALTA CLIENTE','NO'].some(function(x){return v===x||v.indexOf(x)===0;});};
   var esMaloCorreos=function(val,rec){var raw=String(val||'').toUpperCase().trim();var n=(raw==='X'||raw===''||raw==='-')?0:(parseInt(raw)||0);return rec==='si'?(n<1):(n<7);};
   var total=rows.length;
-  document.getElementById('ps-total').textContent=total;
+  var _pst=document.getElementById('ps-total');if(_pst)_pst.textContent=total;
   var sinWhats=rows.filter(function(r){return esMalo(r.whatsapp);}).length;
   var sinDrive=rows.filter(function(r){return esMalo(r.drive);}).length;
   var sinTicket=rows.filter(function(r){return esMalo(r.ticketZoho);}).length;
-  var sinReporte=rows.filter(function(r){return esMaloReporte(r.reporteCuenta);}).length;
   var sinCorreos=rows.filter(function(r){return esMaloCorreos(r.correos,r.recuperado);}).length;
   var sinEvidencia=rows.filter(function(r){return esMalo(r.evidencias);}).length;
-  document.getElementById('ps-sin-whats').textContent=sinWhats;document.getElementById('ps-sin-drive').textContent=sinDrive;
-  document.getElementById('ps-sin-ticket').textContent=sinTicket;document.getElementById('ps-sin-reporte').textContent=sinReporte;
-  document.getElementById('ps-sin-correos').textContent=sinCorreos;document.getElementById('ps-sin-evidencia').textContent=sinEvidencia;
+  var _psw=document.getElementById('ps-sin-whats');if(_psw)_psw.textContent=sinWhats;var _psd=document.getElementById('ps-sin-drive');if(_psd)_psd.textContent=sinDrive;
+  var _pstk=document.getElementById('ps-sin-ticket');if(_pstk)_pstk.textContent=sinTicket;
+  var _psc=document.getElementById('ps-sin-correos');if(_psc)_psc.textContent=sinCorreos;var _pse=document.getElementById('ps-sin-evidencia');if(_pse)_pse.textContent=sinEvidencia;
   var pct=function(n){return total>0?Math.round((n/total)*100):0;};
-  document.getElementById('psb-whats').style.width=pct(sinWhats)+'%';document.getElementById('psb-drive').style.width=pct(sinDrive)+'%';
-  document.getElementById('psb-ticket').style.width=pct(sinTicket)+'%';document.getElementById('psb-reporte').style.width=pct(sinReporte)+'%';
-  document.getElementById('psb-correos').style.width=pct(sinCorreos)+'%';document.getElementById('psb-evidencia').style.width=pct(sinEvidencia)+'%';
-  document.getElementById('pend-count-label').textContent=total+' registro'+(total!==1?'s':'')+' encontrado'+(total!==1?'s':'');
-  if(!rows.length){document.getElementById('pend-tbody').innerHTML='<tr><td colspan="10" class="pend-empty">✅ No hay registros incompletos con los filtros seleccionados</td></tr>';return;}
+  var _pbw=document.getElementById('psb-whats');if(_pbw)_pbw.style.width=pct(sinWhats)+'%';var _pbd=document.getElementById('psb-drive');if(_pbd)_pbd.style.width=pct(sinDrive)+'%';
+  var _pbtk=document.getElementById('psb-ticket');if(_pbtk)_pbtk.style.width=pct(sinTicket)+'%';
+  var _pbc=document.getElementById('psb-correos');if(_pbc)_pbc.style.width=pct(sinCorreos)+'%';var _pbe2=document.getElementById('psb-evidencia');if(_pbe2)_pbe2.style.width=pct(sinEvidencia)+'%';
+  var _pcl=document.getElementById('pend-count-label');if(_pcl)_pcl.textContent=total+' registro'+(total!==1?'s':'')+' encontrado'+(total!==1?'s':'');
+  if(!rows.length){document.getElementById('pend-tbody').innerHTML='<tr><td colspan="9" class="pend-empty">✅ No hay registros incompletos con los filtros seleccionados</td></tr>';return;}
   var chkSiNo=function(val){var v=String(val||'').toUpperCase().trim();if(!v||v==='-'||v==='NO'||v.indexOf('INCOMPLETA')!==-1||v.indexOf('INCOMPLETO')!==-1)return'<span class="check-no">✕</span>';return'<span class="check-yes">✔</span>';};
-  var chkReporte=function(val){var v=String(val||'').toUpperCase().trim();if(!v||v===''||v==='-')return'<span class="check-no">✕</span>';if(['FALTA TICKET','FALTA CLIENTE','NO'].some(function(x){return v===x||v.indexOf(x)===0;}))return'<span class="check-no">✕</span>';return'<span class="check-yes">✔</span> <span style="font-size:.68rem;color:#15803d;font-weight:600">'+v+'</span>';};
   var chkCorreos=function(val,rec){var raw=String(val||'').toUpperCase().trim();var n=(raw==='X'||raw===''||raw==='-')?0:(parseInt(raw)||0);if(rec==='si')return n>=1?'<span class="num-badge" style="background:#dcfce7;color:#15803d">'+n+'</span>':'<span class="num-badge" style="background:#fee2e2;color:#dc2626">0</span>';return n>=7?'<span class="num-badge" style="background:#dcfce7;color:#15803d">'+n+'</span>':'<span class="num-badge" style="background:#fee2e2;color:#dc2626">'+n+'/7</span>';};
   var grupos={};
   rows.forEach(function(r){var key=r.monitorista||'Sin asignar';if(!grupos[key])grupos[key]=[];grupos[key].push(r);});
@@ -2113,9 +2124,9 @@ function renderPendientes(){
   var html='';
   personasSorted.forEach(function(persona,pi){
     var regs=grupos[persona],color=COLORS[pi%COLORS.length],rgb=hexToRgb(color);
-    html+='<tr><td colspan="10" style="background:rgba('+rgb+',.07);border-left:4px solid '+color+';padding:10px 16px"><span style="font-weight:800;font-size:.85rem;color:'+color+'">👤 '+persona+'</span> <span style="background:'+color+';color:#fff;font-size:.65rem;font-weight:700;padding:2px 10px;border-radius:99px">'+regs.length+' caso'+(regs.length!==1?'s':'')+'</span></td></tr>';
+    html+='<tr><td colspan="9" style="background:rgba('+rgb+',.07);border-left:4px solid '+color+';padding:10px 16px"><span style="font-weight:800;font-size:.85rem;color:'+color+'">👤 '+persona+'</span> <span style="background:'+color+';color:#fff;font-size:.65rem;font-weight:700;padding:2px 10px;border-radius:99px">'+regs.length+' caso'+(regs.length!==1?'s':'')+'</span></td></tr>';
     regs.forEach(function(r,i){
-      html+='<tr style="border-left:3px solid '+color+'20"><td class="col-fixed col-num" style="font-weight:700;color:#92400e">'+(i+1)+'</td><td class="col-fixed col-caso" style="font-family:monospace">'+(r.caso||'—')+'</td><td class="col-fixed col-cliente">'+(r.cliente||'—')+'</td><td class="col-fixed col-unidad">'+(r.unidad||'—')+'</td><td class="col-check">'+chkSiNo(r.whatsapp)+'</td><td class="col-check">'+chkSiNo(r.drive)+'</td><td class="col-check">'+chkSiNo(r.ticketZoho)+'</td><td class="col-check-lg">'+chkReporte(r.reporteCuenta)+'</td><td class="col-check">'+chkCorreos(r.correos,r.recuperado)+'</td><td class="col-check">'+chkSiNo(r.evidencias)+'</td></tr>';
+      html+='<tr style="border-left:3px solid '+color+'20"><td class="col-fixed col-num" style="font-weight:700;color:#92400e">'+(i+1)+'</td><td class="col-fixed col-caso" style="font-family:monospace">'+(r.caso||'—')+'</td><td class="col-fixed col-cliente">'+(r.cliente||'—')+'</td><td class="col-fixed col-unidad">'+(r.unidad||'—')+'</td><td class="col-check">'+chkSiNo(r.whatsapp)+'</td><td class="col-check">'+chkSiNo(r.drive)+'</td><td class="col-check">'+chkSiNo(r.ticketZoho)+'</td><td class="col-check">'+chkCorreos(r.correos,r.recuperado)+'</td><td class="col-check">'+chkSiNo(r.evidencias)+'</td></tr>';
     });
   });
   document.getElementById('pend-tbody').innerHTML=html;
@@ -2151,7 +2162,7 @@ function renderSolicitudes(){
   var totalSol=rows.length;
   var tbody=document.getElementById('sol-table-body');
   tbody.innerHTML=monArr.length?monArr.map(function(e,i){var m=['🥇','🥈','🥉'];return'<tr><td>'+(i<3?m[i]+' ':'')+toTitleCase(e[0])+'</td><td>'+e[1]+'</td></tr>';}).join('')+'<tr class="sol-total-row"><td>Total</td><td>'+totalSol+'</td></tr>':'<tr><td colspan="2" style="text-align:center;color:#94a3b8;padding:24px;font-size:.8rem">Sin datos</td></tr>';
-  document.getElementById('sol-subtitle').textContent=(curMes?curMes.charAt(0)+curMes.slice(1).toLowerCase()+' · ':'Todos los meses · ')+totalSol+' actividades';
+  var _ss=document.getElementById('sol-subtitle');if(_ss)_ss.textContent=(curMes?curMes.charAt(0)+curMes.slice(1).toLowerCase()+' · ':'Todos los meses · ')+totalSol+' actividades';
   var porMes={};
   solicitudesData.forEach(function(r){var key=r.mes+(r.anio?' '+r.anio:'');if(!porMes[key])porMes[key]={mes:r.mes,anio:r.anio,total:0};porMes[key].total++;});
   var mesesArr=Object.values(porMes).sort(function(a,b){if(a.anio!==b.anio)return(a.anio||0)-(b.anio||0);return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});

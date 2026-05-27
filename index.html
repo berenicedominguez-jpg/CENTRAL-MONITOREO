@@ -1051,7 +1051,7 @@ function onPageMesChange(page){
   if(page==='men'){zohoAgentes=[];if(zohoRetryTimer){clearTimeout(zohoRetryTimer);zohoRetryTimer=null;}renderMensual(mes);}
   if(page==='rec')renderRecuperaciones(mes);
   if(page==='srv'){zohoAgentes=[];renderServicio(mes);}
-  if(page==='des'){zohoAgentes=[];loadZohoAgentes(mes||getMesActualFrontend());renderSolicitudes();}
+  if(page==='des'){zohoAgentes=[];loadZohoAgentes(mes);renderSolicitudes();}
 }
 
 function buildCuatriTabs(){
@@ -1121,7 +1121,7 @@ function buildNcChart(opts){
     var sBar='';
     if(!single){var sLI=hS>=20;sBar='<div class="nc-bar-s" style="height:'+hS+'px">'+(sLI?'<span class="nc-bar-val">'+(d.secondary||0)+'</span>':((d.secondary||0)>0?'<span class="nc-bar-val outside">'+(d.secondary||0)+'</span>':''))+'</div>';}
     var total=single?d.primary:(d.primary+(d.secondary||0));
-    var pctStr=d.pct!=null?d.pct.toFixed(1)+'%':'';
+    var pctStr=d.pct!=null?d.pct.toFixed(2)+'%':'';
     return'<div class="'+colCls+'"><div class="nc-bar-group" style="height:'+(CHART_H+TOP_PAD)+'px;align-items:flex-end;padding-top:'+TOP_PAD+'px">'+pBar+sBar+'</div><div class="nc-x-axis"></div><div class="nc-x-label">'+d.label+'</div><div class="nc-x-total">'+total+'</div><div class="nc-x-pct">'+pctStr+'</div></div>';
   }).join('');
   el.innerHTML='<div class="nc-wrap"><div class="nc-header"><span class="nc-title">'+opts.title+'</span>'+leg+'</div><div class="nc-inner"><div class="nc-scroll"><div class="nc-bars-area" style="min-width:'+(data.length*64)+'px">'+cols+'</div></div></div></div>';
@@ -1142,7 +1142,7 @@ function renderPage(p){
   if(p==='mensual')renderMensual(getPageMes('men'));
   if(p==='recuperaciones')renderRecuperaciones(getPageMes('rec'));
   if(p==='servicio')renderServicio(getPageMes('srv'));
-  if(p==='desempeno'){var m=getPageMes('des');if(!zohoAgentes.length)loadZohoAgentes(m||getMesActualFrontend());else renderDesempeno(m);renderSolicitudes();}
+  if(p==='desempeno'){var m=getPageMes('des');if(!zohoAgentes.length)loadZohoAgentes(m);else renderDesempeno(m);renderSolicitudes();}
   if(p==='pendientes')renderPendientes();
   if(p==='nmdp')renderNMDP();
 }
@@ -1161,8 +1161,8 @@ async function loadAll(){
     ]);
     var j1=results[0],j2=results[1],j3=results[2],j4=results[3],j5=results[4];
     if(j1.error)throw new Error(j1.error);
-    recData=(j1.rows||[]).map(function(r){return{tipo:String(r['recup']||'').toLowerCase().trim(),mes:String(r['mes']||'').toUpperCase().trim(),recup:parseFloat(r['recuperadas'])||0,noRec:parseFloat(r['no_recuperadas'])||0};}).filter(function(r){return r.tipo&&r.mes;});
-    srvData=(j2.rows||[]).map(function(r){return{mes:String(r['mes']||'').toUpperCase().trim(),total:parseFloat(r['total de encuestas']||0)||0,calif:parseFloat(r['calificación']||r['calificacion']||0)};}).filter(function(r){return r.mes;});
+    recData=(j1.rows||[]).map(function(r){var tipo=String(r['recup']||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');return{tipo:tipo,mes:String(r['mes']||'').toUpperCase().trim(),recup:parseFloat(r['recuperadas'])||0,noRec:parseFloat(r['no_recuperadas'])||0};}).filter(function(r){return r.tipo&&r.mes;});
+    srvData=(j2.rows||[]).map(function(r){var califRaw=r['calificación']||r['calificacion'];var calif=parseFloat(califRaw);return{mes:String(r['mes']||'').toUpperCase().trim(),total:parseFloat(r['total de encuestas']||0)||0,calif:calif};}).filter(function(r){return r.mes&&r.total>0&&!isNaN(r.calif)&&r.calif>0;});
     capacitacionesData=(j2.rows||[]).filter(function(r){return String(r['cliente']||'').trim()!='';}).map(function(r){var mesRaw=String(r['mes_cliente']||r['mes cliente']||'').toLowerCase().trim();var mesMap={'ene':'ENERO','feb':'FEBRERO','mar':'MARZO','abr':'ABRIL','may':'MAYO','jun':'JUNIO','jul':'JULIO','ago':'AGOSTO','sep':'SEPTIEMBRE','oct':'OCTUBRE','nov':'NOVIEMBRE','dic':'DICIEMBRE'};var mes=mesMap[mesRaw]||mesRaw.toUpperCase();return{mes:mes,cliente:String(r['cliente']||'').trim(),total:parseFloat(r['total']||0)||0};}).filter(function(r){return r.mes&&r.cliente;});
     robosData=(j3.rows||[]).map(function(r){
       var keys=Object.keys(r);
@@ -1335,11 +1335,9 @@ function getConPctMes(key,mes){
 function getConPct(key){return getConPctMes(key,getPageMes('men')||getMesActualFrontend());}
 
 function renderConectividad(mes){
-  var META=85;mes=mes||getPageMes('men')||getMesActualFrontend();
+  var META=85;
+  var mesEfectivo=mes||getPageMes('men')||getMesActualFrontend();
   var subKeys=['legacy','s1','s2','s3','bafar','recuperamovil'];
-  var platVals=subKeys.map(function(k){return getConPctMes(k,mes);}).filter(function(v){return v!==null;});
-  var pctMes=conectividadHistorial[mes]!==undefined?conectividadHistorial[mes]:null;
-  var generalPct=platVals.length>0?(platVals.reduce(function(s,v){return s+v;},0)/platVals.length):pctMes;
   var setCard=function(id,pct,det){
     var good=pct!==null&&pct>=META;
     var color=pct===null?null:good?'#0f6e56':'#a32d2d';
@@ -1350,8 +1348,24 @@ function renderConectividad(mes){
     if(be){be.className='rd-badge '+(pct===null?'':good?'rd-bok':'rd-bfail');be.textContent=pct===null?'⏳ Sin datos':good?'✅ Cumple meta':'❌ Bajo meta';}
     if(ce)ce.className='rd-kpi-card '+(pct===null?'':good?'gn':'rd');
   };
-  setCard('general',generalPct,platVals.length>0?'Promedio de '+platVals.length+' plataformas':'Conectividad del mes');
-  subKeys.forEach(function(id){setCard(id,getConPctMes(id,mes),'Conectividad registrada');});
+  if(!mes){
+    var mesesDisp=Object.keys(conectividadData).filter(function(m){return MESES_ORD.indexOf(m)>=0;});
+    var getPromPlat=function(key){
+      var vals=mesesDisp.map(function(m){return getConPctMes(key,m);}).filter(function(v){return v!==null;});
+      return vals.length?vals.reduce(function(s,v){return s+v;},0)/vals.length:null;
+    };
+    var platProms=subKeys.map(function(k){return getPromPlat(k);}).filter(function(v){return v!==null;});
+    var generalPct=platProms.length?platProms.reduce(function(s,v){return s+v;},0)/platProms.length:null;
+    var nMeses=mesesDisp.length;
+    setCard('general',generalPct,nMeses>0?'Promedio anual · '+nMeses+' meses':'Sin datos');
+    subKeys.forEach(function(id){var p=getPromPlat(id);setCard(id,p,p!==null?'Promedio anual · '+nMeses+' meses':'Sin datos');});
+  } else {
+    var platVals=subKeys.map(function(k){return getConPctMes(k,mesEfectivo);}).filter(function(v){return v!==null;});
+    var pctMes=conectividadHistorial[mesEfectivo]!==undefined?conectividadHistorial[mesEfectivo]:null;
+    var generalPct=platVals.length>0?(platVals.reduce(function(s,v){return s+v;},0)/platVals.length):pctMes;
+    setCard('general',generalPct,platVals.length>0?'Promedio de '+platVals.length+' plataformas':'Conectividad del mes');
+    subKeys.forEach(function(id){setCard(id,getConPctMes(id,mesEfectivo),'Conectividad registrada');});
+  }
 }
 
 async function renderResumen(){
@@ -1419,7 +1433,7 @@ async function renderResumen(){
         return'<td class="kn-mes-cell"><div class="kn-mes-val"><span class="kn-dot nd"></span>—</div><span class="kn-badge nd">S/D</span></td>';
       }
       var ok=d.cumple===true;
-      var dispVal=k.tipo==='tiempo'?fmtMin(d.val):d.val.toFixed(1)+'%';
+      var dispVal=k.tipo==='tiempo'?fmtMin(d.val):d.val.toFixed(2)+'%';
 
       // ── Detalle adicional por tipo de KPI ──
       var detalleHtml='';
@@ -1471,7 +1485,7 @@ async function renderResumen(){
       var pctAv=pesoNum>0?(pts/pesoNum*100):0;
       estatusHtml='<div class="kn-pts">'+pts.toFixed(2)+'% <span>/ '+pesoNum+'%</span></div>'
         +'<div class="kn-bar-wrap"><div class="kn-bar-fill '+barCls+'" style="width:'+barW.toFixed(1)+'%"></div></div>'
-        +'<div class="kn-avance">'+mCumplen.length+' meses cumplidos · '+pctAv.toFixed(1)+'% avance</div>';
+        +'<div class="kn-avance">'+mCumplen.length+' meses cumplidos · '+pctAv.toFixed(2)+'% avance</div>';
     }
 
     html+='<tr>'
@@ -1512,9 +1526,15 @@ function computeKpiValoresPorMes(kid,kTipo,kMeta,mesesFiltro){
     });return result;
   }
   if(kid==='capac'){
-    srvData.forEach(function(r){if(mesesFiltro.indexOf(r.mes)===-1||!r.total)return;result[r.mes]={val:r.calif,cumple:r.calif>=kMeta};});
+    var capPorMes={};
+    srvData.forEach(function(r){if(mesesFiltro.indexOf(r.mes)===-1||!r.total||isNaN(r.calif)||r.calif<=0)return;if(!capPorMes[r.mes])capPorMes[r.mes]={sumPond:0,sumTot:0};capPorMes[r.mes].sumPond+=r.calif*r.total;capPorMes[r.mes].sumTot+=r.total;});
+    Object.keys(capPorMes).forEach(function(m){var d=capPorMes[m];var val=d.sumTot>0?d.sumPond/d.sumTot:null;if(val!==null)result[m]={val:val,cumple:val>=kMeta};});
     return result;
   }
+
+
+
+
   var kw=kid==='robos'?'rob':kid==='abusos'?'abu':'cred';
   var porMes={};
   recData.forEach(function(r){if(mesesFiltro.indexOf(r.mes)===-1)return;if(!r.tipo.includes(kw))return;if(!porMes[r.mes])porMes[r.mes]={recup:0,noRec:0};porMes[r.mes].recup+=r.recup;porMes[r.mes].noRec+=r.noRec;});
@@ -1530,8 +1550,8 @@ function renderMensual(mes){
   var find=function(t){var k=Object.keys(agg).find(function(k){return k.includes(t);});return k?agg[k]:null;};
   setKPI('robos',find('rob'),90);setKPI('abusos',find('abu'),80);setKPI('creditos',find('cred'),90);
   loadZohoTickets(mes);
-  var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
-  if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);setKPISimple('capac',avg,tot,95);}
+  var srvRows=(mes?srvData.filter(function(r){return r.mes===mes;}):srvData).filter(function(r){return r.total>0&&!isNaN(r.calif)&&r.calif>0;});
+  if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+(r.total||0);},0);var avg=tot>0?srvRows.reduce(function(s,r){return s+(r.calif*r.total);},0)/tot:0;setKPISimple('capac',avg,tot,95);}
   else resetKPI('capac');
   renderConectividad(mes);
 }
@@ -1543,7 +1563,7 @@ function renderRecuperaciones(mes){
     var total=rows.length,rec=rows.filter(function(r){return r.recuperado==='si';}).length,noRec=total-rec;
     var pct=total>0?(rec/total*100):null,status=pct===null?'empty':pct>=c.meta?'ok':'fail';
     var plats=[...new Set(rows.map(function(r){return r.plataforma;}))].filter(Boolean);
-    return'<div class="comp-card '+status+'"><div class="comp-title">'+c.icono+' '+c.nombre+'<span class="comp-sub">Meta ≥ '+c.meta+'%</span></div><div class="comp-grid"><div class="comp-stat"><span class="val">'+(total||'—')+'</span><span class="lbl">Total casos</span></div><div class="comp-stat"><span class="val blue">'+(rec||'—')+'</span><span class="lbl">Recuperadas</span></div><div class="comp-stat"><span class="val red">'+(noRec||'—')+'</span><span class="lbl">No recuperadas</span></div><div class="comp-stat"><span class="comp-pct '+status+'">'+(pct!==null?pct.toFixed(1)+'%':'—')+'</span><span class="lbl">% Recuperación</span></div></div><div class="comp-divider"></div><div class="comp-bar"><div class="comp-bar-fill '+status+'" style="width:'+(pct?Math.min(pct,100):0)+'%"></div></div><div class="comp-platforms">'+(plats.length?plats.map(function(p){return'<span class="comp-platform-tag">'+p+'</span>';}).join(''):'<span class="comp-platform-tag">Sin datos</span>')+'</div></div>';
+    return'<div class="comp-card '+status+'"><div class="comp-title">'+c.icono+' '+c.nombre+'<span class="comp-sub">Meta ≥ '+c.meta+'%</span></div><div class="comp-grid"><div class="comp-stat"><span class="val">'+(total||'—')+'</span><span class="lbl">Total casos</span></div><div class="comp-stat"><span class="val blue">'+(rec||'—')+'</span><span class="lbl">Recuperadas</span></div><div class="comp-stat"><span class="val red">'+(noRec||'—')+'</span><span class="lbl">No recuperadas</span></div><div class="comp-stat"><span class="comp-pct '+status+'">'+(pct!==null?pct.toFixed(2)+'%':'—')+'</span><span class="lbl">% Recuperación</span></div></div><div class="comp-divider"></div><div class="comp-bar"><div class="comp-bar-fill '+status+'" style="width:'+(pct?Math.min(pct,100):0)+'%"></div></div><div class="comp-platforms">'+(plats.length?plats.map(function(p){return'<span class="comp-platform-tag">'+p+'</span>';}).join(''):'<span class="comp-platform-tag">Sin datos</span>')+'</div></div>';
   }).join('');
   var buildMes=function(cid,title,companias){
     var porMes={};
@@ -1557,7 +1577,7 @@ function renderRecuperaciones(mes){
   filas.forEach(function(r){var iv=String(r.tiempoReporte||'').trim().toUpperCase();var key=INTERVALOS.find(function(i){return iv.includes(i.replace('.','').toUpperCase());});if(key){porIntervalo[key].total++;if(r.recuperado==='si')porIntervalo[key].rec++;}});
   document.getElementById('rec-intervalos-body').innerHTML=INTERVALOS.map(function(iv){
     var d=porIntervalo[iv];if(!d.total)return'<tr><td>'+iv+'</td><td colspan="5" style="color:#94a3b8;font-size:.75rem">Sin datos</td></tr>';
-    var pct=(d.rec/d.total*100).toFixed(1),noRec=d.total-d.rec,p=parseFloat(pct);
+    var pct=(d.rec/d.total*100).toFixed(2),noRec=d.total-d.rec,p=parseFloat(pct);
     var nivel=p>=80?'🔥 Alta efectividad':p>=50?'⚠️ Media efectividad':'❌ Baja efectividad';
     var nivelCls=p>=80?'pill-green':p>=50?'pill-amber':'pill-red';
     return'<tr><td><b>'+iv+'</b></td><td>'+d.total+'</td><td>'+d.rec+'</td><td>'+noRec+'</td><td><span style="color:'+(p>=90?'#1d4ed8':'#b91c1c')+';font-weight:700">'+pct+'%</span></td><td><span class="pill '+nivelCls+'">'+nivel+'</span></td></tr>';
@@ -1568,10 +1588,31 @@ function renderServicio(mes){
   currentServicioMes=mes||'';
   var mesKey=mes||getMesActualFrontend();
   var srvRows=mes?srvData.filter(function(r){return r.mes===mes;}):srvData;
-  if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);var _sc2=document.getElementById('srv-capac');if(_sc2)_sc2.textContent=avg.toFixed(1)+'%';}
+  if(srvRows.length){var tot=srvRows.reduce(function(s,r){return s+r.total;},0);var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);var _sc2=document.getElementById('srv-capac');if(_sc2)_sc2.textContent=avg.toFixed(2)+'%';}
   else{var _sc=document.getElementById('srv-capac');if(_sc)_sc.textContent='—';}
   renderGraficaCapac(mes);renderGraficaCarso();renderCapacPanel(mes);renderExternosPanel(mes);
-  // Verificar si zohoAgentes corresponde al mes solicitado
+
+  if(!mes){
+    // TODOS LOS MESES: fusionar agentes de todos los meses cacheados
+    var mesesConCache=MESES_ORD.filter(function(m){var c=zohoCacheGet(m);return c&&c.agentes&&c.agentes.length;});
+    if(mesesConCache.length){
+      var merged=mergeZohoAgentesAllMeses();
+      var totalInt=merged.reduce(function(s,a){return s+(a.tickets||0);},0);
+      var elInt=document.getElementById('srv-total-internos');
+      if(elInt)elInt.textContent=totalInt||'—';
+      var extVal=getExternoVal('');
+      var stot=document.getElementById('srv-total');
+      if(stot)stot.textContent=(totalInt+extVal)||'—';
+      // Tabla de agentes: mostrar acumulado anual
+      zohoAgentes=merged;renderAgentesZoho();
+    } else {
+      // Nada cacheado aún → cargar historial y reintentar
+      loadZohoAgentes('').then(function(){renderServicio('');});
+    }
+    return;
+  }
+
+  // Mes específico: comportamiento original
   var cachedMes=zohoCacheGet(mesKey);
   var agentesDelMes=cachedMes&&cachedMes.agentes&&cachedMes.agentes.length?cachedMes.agentes:null;
   if(agentesDelMes){
@@ -1596,7 +1637,7 @@ function renderCapacPanel(mes){
     var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);
     califVal=avg; totalEnc=tot;
   }
-  var califStr=califVal>0?califVal.toFixed(1)+'%':'—';
+  var califStr=califVal>0?califVal.toFixed(2)+'%':'—';
   var cumple=califVal>=95;
   var badgeStyle=cumple?'background:rgba(52,211,153,.2);color:#34d399':'background:rgba(248,113,113,.2);color:#f87171';
   var badgeTxt=cumple?'✅ Cumple meta':'⚠️ Bajo meta';
@@ -1765,6 +1806,23 @@ function zohoMerge(cached, nuevosAgentes){
   }).sort(function(a,b){return b.tickets-a.tickets;});
 }
 
+function mergeZohoAgentesAllMeses(){
+  var merged={};
+  MESES_ORD.forEach(function(m){
+    var c=zohoCacheGet(m);
+    if(!c||!c.agentes||!c.agentes.length)return;
+    c.agentes.forEach(function(a){
+      var key=String(a.nombre||'').toUpperCase().trim().replace(/\s+/g,' ');
+      if(!key)return;
+      if(!merged[key])merged[key]={nombre:a.nombre,tickets:0,count:0,totalMinutes:0};
+      merged[key].tickets+=(parseFloat(a.tickets)||0);
+      merged[key].count+=(parseFloat(a.count)||0);
+      merged[key].totalMinutes+=(parseFloat(a.totalMinutes)||0);
+    });
+  });
+  return Object.values(merged);
+}
+
 async function loadZohoAgentes(mes){
   var mesKey=mes||getMesActualFrontend();
   var esMesActual=!mesCerradoFrontend(mesKey);
@@ -1773,6 +1831,22 @@ async function loadZohoAgentes(mes){
   var stot=document.getElementById('srv-total'),sfrt=document.getElementById('srv-frt');
   if(stot) stot.textContent='—'; if(sfrt) sfrt.textContent='—';
   try{
+    // TODOS LOS MESES: fusionar agentes de todos los meses cacheados
+    if(!mes){
+      var mesesConCache=MESES_ORD.filter(function(m){var c=zohoCacheGet(m);return c&&c.agentes&&c.agentes.length;});
+      if(!mesesConCache.length){
+        // Nada cacheado aún → cargar el mes actual al menos y reintentar
+        var jsonAct=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(getMesActualFrontend())).then(function(r){return r.json();});
+        if(!jsonAct.error&&jsonAct.data&&jsonAct.data.length){
+          var avgAct=zohoAvgFromAgentes(jsonAct.data);
+          zohoCacheSet(getMesActualFrontend(),avgAct||undefined,jsonAct.data);
+        }
+      }
+      zohoAgentes=mergeZohoAgentesAllMeses();
+      renderAgentesZoho();renderDesempeno('');
+      if(currentPage==='resumen')renderResumen();
+      return;
+    }
     var cached=zohoCacheGet(mesKey);
     if(mesCerradoFrontend(mesKey)){
       // Mes cerrado: usar caché permanente, sin fetch
@@ -1895,7 +1969,7 @@ function renderAgentesZoho(){
       +'<td style="text-align:center">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'<span style="color:#94a3b8">'+(i+1)+'</span>')+'</td>'
       +'<td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:'+ac[0]+';color:'+ac[1]+';display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700">'+initials.toUpperCase()+'</div>'+toTitleCase(a.nombre)+'</div></td>'
       +'<td>'+a.tickets+'</td>'
-      +'<td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="height:5px;width:60px;background:#e8eef5;border-radius:99px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:#185fa5;border-radius:99px"></div></div>'+pct.toFixed(1)+'%</div></td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="height:5px;width:60px;background:#e8eef5;border-radius:99px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:#185fa5;border-radius:99px"></div></div>'+pct.toFixed(2)+'%</div></td>'
       +'<td><span style="color:'+(avgMin===0?'#94a3b8':good?'#0f6e56':'#a32d2d')+';font-weight:700">'+(avgMin?fmtMin(avgMin):'—')+'</span></td>'
       +'</tr>';
   }).join('');
@@ -1906,6 +1980,31 @@ async function loadZohoTickets(mes){
   var dt=document.getElementById('d-tickets');
   try{
     var agentes;
+    // TODOS LOS MESES: fusionar caché de todos los meses
+    if(!mes){
+      var mesesConCache=MESES_ORD.filter(function(m){var c=zohoCacheGet(m);return c&&c.agentes&&c.agentes.length;});
+      if(!mesesConCache.length){
+        if(dt)dt.textContent='⏳ Consultando Zoho...';
+        var jsonAct=await fetch(API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(getMesActualFrontend())).then(function(r){return r.json();});
+        if(!jsonAct.error&&jsonAct.data&&jsonAct.data.length){
+          var avgAct=zohoAvgFromAgentes(jsonAct.data);
+          zohoCacheSet(getMesActualFrontend(),avgAct||undefined,jsonAct.data);
+        }
+      }
+      agentes=mergeZohoAgentesAllMeses();
+      var totalTickets=agentes.reduce(function(s,a){return s+(a.tickets||0);},0);
+      var avgMin=getGlobalFrt(agentes);
+      if(!totalTickets&&!avgMin){resetKPI('tickets');return;}
+      var meta=15,pct=avgMin>0?Math.min((meta/avgMin)*100,100):0,good=avgMin>0&&avgMin<=meta,label=avgMin>0?fmtMin(avgMin):'—';
+      var vt=document.getElementById('v-tickets'),pbt=document.getElementById('pb-tickets'),bt=document.getElementById('b-tickets'),ct=document.getElementById('c-tickets');
+      if(vt)vt.textContent=label;
+      if(dt)dt.textContent='Total: '+totalTickets+' tickets internos';
+      if(pbt){pbt.style.width=pct+'%';pbt.style.background=good?'#0f6e56':'#a32d2d';}
+      if(bt){bt.className='rd-badge '+(good?'rd-bok':'rd-bfail');bt.textContent=good?'✅ Cumple meta':'❌ Sobre meta';}
+      if(ct)ct.className='rd-kpi-card '+(good?'gn':'rd');
+      if(currentPage==='resumen')renderResumen();
+      return;
+    }
     var cached=zohoCacheGet(mesKey);
     if(mesCerradoFrontend(mesKey)){
       // Mes cerrado: usar caché permanente
@@ -1969,8 +2068,7 @@ async function loadZohoTickets(mes){
 }
 
 function renderDesempeno(mes){
-  var mesKey=mes||getMesActualFrontend();
-  var filas=mesKey?robosData.filter(function(r){return r.mes===mesKey;}):robosData;
+  var filas=mes?robosData.filter(function(r){return r.mes===mes;}):robosData;
   var totalTickets=zohoAgentes.reduce(function(s,a){return s+a.tickets;},0);
 
   function getInitials(n){var p=n.trim().split(' ');return(p[0]?p[0][0]:'')+(p[1]?p[1][0]:'');}
@@ -2020,9 +2118,9 @@ function renderDesempeno(mes){
       +'<td style="border-left:2px solid #e2e8f0">'+r.total+'</td>'
       +'<td>'+r.rec+'</td>'
       +'<td>'+r.noRec+'</td>'
-      +'<td>'+barHtml(r.pctEf,'#185fa5')+'<span style="color:'+pctColor(r.pctEf)+';font-weight:700;font-size:.72rem">'+r.pctEf.toFixed(1)+'%</span></td>'
+      +'<td>'+barHtml(r.pctEf,'#185fa5')+'<span style="color:'+pctColor(r.pctEf)+';font-weight:700;font-size:.72rem">'+r.pctEf.toFixed(2)+'%</span></td>'
       +'<td style="border-left:2px solid #e2e8f0">'+r.tickets+'</td>'
-      +'<td>'+barHtml(r.pctTick,'#3b6d11')+'<span style="font-size:.72rem">'+r.pctTick.toFixed(1)+'%</span></td>'
+      +'<td>'+barHtml(r.pctTick,'#3b6d11')+'<span style="font-size:.72rem">'+r.pctTick.toFixed(2)+'%</span></td>'
       +'<td><span style="color:'+timeColor(r.avgMin)+';font-weight:700">'+(r.avgMin?fmtMin(r.avgMin):'—')+'</span></td>'
       +'<td style="border-left:2px solid #e2e8f0;text-align:center">'+scorePillHtml(r.score,r.score>=50?'#3b6d11':r.score>=25?'#854f0b':'#a32d2d',r.score>=50?'#eaf3de':r.score>=25?'#faeeda':'#fcebeb')+'</td>'
       +'</tr>';
@@ -2060,7 +2158,7 @@ function renderDesempeno(mes){
   var ebody=document.getElementById('des-especialistas-body');
   ebody.innerHTML=espRows.length?espRows.map(function(r,i){
     var ac=avatarColor(i);
-    var pctEfStr=r.pctEf!==null?r.pctEf.toFixed(1)+'%':'—';
+    var pctEfStr=r.pctEf!==null?r.pctEf.toFixed(2)+'%':'—';
     var pctEfBar=r.pctEf!==null?barHtml(r.pctEf,'#185fa5'):'';
     var pctEfColor=r.pctEf!==null?pctColor(r.pctEf):'#94a3b8';
     return'<tr>'
@@ -2071,7 +2169,7 @@ function renderDesempeno(mes){
       +'<td>'+r.noRec+'</td>'
       +'<td>'+pctEfBar+'<span style="color:'+pctEfColor+';font-weight:700;font-size:.72rem">'+pctEfStr+'</span></td>'
       +'<td style="border-left:2px solid #e2e8f0">'+r.tickets+'</td>'
-      +'<td>'+barHtml(r.pctTick,'#3b6d11')+'<span style="font-size:.72rem">'+r.pctTick.toFixed(1)+'%</span></td>'
+      +'<td>'+barHtml(r.pctTick,'#3b6d11')+'<span style="font-size:.72rem">'+r.pctTick.toFixed(2)+'%</span></td>'
       +'<td><span style="color:'+timeColor(r.avgMin)+';font-weight:700">'+(r.avgMin?fmtMin(r.avgMin):'—')+'</span></td>'
       +'<td style="border-left:2px solid #e2e8f0;text-align:center">'+scorePillHtml(r.score,r.score>=10?'#3b6d11':r.score>=3?'#854f0b':'#a32d2d',r.score>=10?'#eaf3de':r.score>=3?'#faeeda':'#fcebeb')+'</td>'
       +'</tr>';
@@ -2082,8 +2180,11 @@ function poblarFiltrosPendientes(){
   var meses=[...new Set(pendientesData.map(function(r){return r.mes;}))].sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
   var plats=[...new Set(pendientesData.map(function(r){return r.plataforma;}).filter(Boolean))].sort();
   var pfMes=document.getElementById('pf-mes'),pfPlat=document.getElementById('pf-plataforma');
+  var prevMes=pfMes?pfMes.value:'';
   pfMes.innerHTML='<option value="">— Todos los meses —</option>';
   meses.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.charAt(0)+m.slice(1).toLowerCase();pfMes.appendChild(o);});
+  if(!prevMes&&meses.length){var mesAct=getMesActualFrontend();pfMes.value=meses.indexOf(mesAct)!==-1?mesAct:meses[meses.length-1];}
+  else if(prevMes){pfMes.value=prevMes;}
   pfPlat.innerHTML='<option value="">— Todas las plataformas —</option>';
   plats.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;pfPlat.appendChild(o);});
 }
@@ -2205,7 +2306,7 @@ function exportPDF(){
       if(!finalizado)return'<td style="text-align:center;padding:7px 6px;border-right:1px solid #f1f5f9"><span style="background:#f1f5f9;color:#94a3b8;font-size:6pt;padding:2px 7px;border-radius:99px">S/D</span></td>';
       var d=det[m];
       if(!d||d.val===null)return'<td style="text-align:center;padding:7px 6px;border-right:1px solid #f1f5f9"><span style="background:#f1f5f9;color:#94a3b8;font-size:6pt;padding:2px 7px;border-radius:99px">S/D</span></td>';
-      var ok=d.cumple===true;var dispVal=k.tipo==='tiempo'?fmtMin(d.val):d.val.toFixed(1)+'%';
+      var ok=d.cumple===true;var dispVal=k.tipo==='tiempo'?fmtMin(d.val):d.val.toFixed(2)+'%';
 
       // Detalle adicional por tipo de KPI
       var detalleHtml='';
@@ -2278,7 +2379,7 @@ function resetKPI(id){var ve=document.getElementById('v-'+id),de=document.getEle
    NMDP — Funciones de renderizado
    ============================================================ */
 function fmt$(n){if(n==null||isNaN(n))return'—';return'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtPct(a,b){if(!b)return'—';return((a/b)*100).toFixed(1)+'%';}
+function fmtPct(a,b){if(!b)return'—';return((a/b)*100).toFixed(2)+'%';}
 
 function renderExpedientes(){
   var sel=document.getElementById('msel-nmdp');
@@ -2301,8 +2402,8 @@ function renderExpedientes(){
   if(elT)elT.textContent=total||'—';
   if(elOn)elOn.textContent=online||'—';
   if(elOff)elOff.textContent=offline||'—';
-  if(elOnP)elOnP.textContent=total>0?(((online/total)*100).toFixed(1)+'% del total'):'— del total';
-  if(elOffP)elOffP.textContent=total>0?(((offline/total)*100).toFixed(1)+'% del total'):'— del total';
+  if(elOnP)elOnP.textContent=total>0?(((online/total)*100).toFixed(2)+'% del total'):'— del total';
+  if(elOffP)elOffP.textContent=total>0?(((offline/total)*100).toFixed(2)+'% del total'):'— del total';
   setTimeout(function(){
     if(elOnBar)elOnBar.style.width=total>0?((online/total)*100)+'%':'0%';
     if(elOffBar)elOffBar.style.width=total>0?((offline/total)*100)+'%':'0%';
@@ -2320,7 +2421,7 @@ function renderExpedientes(){
   var totalOnline=rezagadosData.reduce(function(s,r){return s+(r.online||0);},0);
   var totalOffline=rezagadosData.reduce(function(s,r){return s+(r.offline||0);},0);
   tbody.innerHTML=rezagadosData.map(function(r){
-    var pct=totalRez>0?((r.valor/totalRez)*100).toFixed(1)+'%':'—';
+    var pct=totalRez>0?((r.valor/totalRez)*100).toFixed(2)+'%':'—';
     var onlineVal=(r.online||0)>0?r.online:'—';
     var offlineVal=(r.offline||0)>0?r.offline:'—';
     return '<tr><td>'+r.label+'</td>'
@@ -2461,7 +2562,7 @@ function renderNMDPDonut(rec,noRec){
   svg.innerHTML=paths
     +'<text x="'+cx+'" y="'+(cy-10)+'" text-anchor="middle" font-size="24" font-weight="800" fill="#0a1f3c" font-family="Segoe UI,sans-serif">'+total+'</text>'
     +'<text x="'+cx+'" y="'+(cy+10)+'" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="Segoe UI,sans-serif">tickets totales</text>'
-    +'<text x="'+cx+'" y="'+(cy+28)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#2563a8" font-family="Segoe UI,sans-serif">'+pctRec.toFixed(1)+'% recuperados</text>';
+    +'<text x="'+cx+'" y="'+(cy+28)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#2563a8" font-family="Segoe UI,sans-serif">'+pctRec.toFixed(2)+'% recuperados</text>';
   if(leg)leg.innerHTML=
     '<div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#1e2a3a"><span style="width:12px;height:12px;border-radius:3px;background:#2563a8;display:inline-block"></span>Recuperados &nbsp;<b>'+rec+'</b></div>'
     +'<div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#1e2a3a"><span style="width:12px;height:12px;border-radius:3px;background:#e2e8f0;border:1px solid #cbd5e1;display:inline-block"></span>No Recuperados &nbsp;<b>'+noRec+'</b></div>';

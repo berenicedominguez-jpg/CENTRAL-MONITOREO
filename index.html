@@ -1574,7 +1574,8 @@ function renderRecuperaciones(mes){
   buildMes('nc-meses-numaris','📊 Recuperaciones por Mes — NUMARIS',['TECNOCONTROL','SMARTTRACKER','EASYTRACK']);
   buildMes('nc-meses-inbursa','📊 Recuperaciones por Mes — INBURSA',['INBURSA']);
   var porIntervalo={};INTERVALOS.forEach(function(i){porIntervalo[i]={total:0,rec:0};});
-  filas.forEach(function(r){var iv=String(r.tiempoReporte||'').trim().toUpperCase();var key=INTERVALOS.find(function(i){return iv.includes(i.replace('.','').toUpperCase());});if(key){porIntervalo[key].total++;if(r.recuperado==='si')porIntervalo[key].rec++;}});
+  function normalizarIntervalo(str){return str.toUpperCase().trim().replace(/\s*-\s*/g,'-').replace(/\./g,'').replace(/\s+/g,' ');}
+  filas.forEach(function(r){var iv=normalizarIntervalo(String(r.tiempoReporte||''));var key=INTERVALOS.find(function(i){return iv.includes(normalizarIntervalo(i));});if(key){porIntervalo[key].total++;if(r.recuperado==='si')porIntervalo[key].rec++;}});
   document.getElementById('rec-intervalos-body').innerHTML=INTERVALOS.map(function(iv){
     var d=porIntervalo[iv];if(!d.total)return'<tr><td>'+iv+'</td><td colspan="5" style="color:#94a3b8;font-size:.75rem">Sin datos</td></tr>';
     var pct=(d.rec/d.total*100).toFixed(2),noRec=d.total-d.rec,p=parseFloat(pct);

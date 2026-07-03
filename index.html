@@ -696,6 +696,12 @@
             <div id="nmdpsop-total-delta"></div>
           </div>
         </div>
+
+        <div class="slabel"><h2>👤 Distribución de Solicitudes — ¿De dónde viene el trabajo?</h2></div>
+        <div class="rd-stat-row" id="nmdpsop-personas-row" style="grid-template-columns:repeat(2,1fr)">
+          <div class="rd-stat-card"><div style="color:#94a3b8;font-size:.8rem">⏳ Cargando...</div></div>
+        </div>
+
         <div id="nc-nmdpsop"></div>
       </div>
 
@@ -2758,6 +2764,7 @@ async function loadNmdpSoporte(){
   try{
     var json=await fetchSheetConFallback(['SOPORTE_NMDP']);
     if(!json){console.warn('[NmdpSoporte] no se pudo cargar la hoja');return;}
+    var COLUMNAS_CONOCIDAS=['mes','total','urgentes','revisados','sin respuesta (+12h)','sin respuesta','última actualización','ultima actualizacion'];
     nmdpSoporteData=(json.rows||[]).map(function(r){
       var keys=Object.keys(r);
       var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
@@ -2765,7 +2772,16 @@ async function loadNmdpSoporte(){
       var mesRaw=String(r[kMes]||'').toUpperCase().trim();
       var mesMap={'ENE':'ENERO','FEB':'FEBRERO','MAR':'MARZO','ABR':'ABRIL','MAY':'MAYO','JUN':'JUNIO','JUL':'JULIO','AGO':'AGOSTO','SEP':'SEPTIEMBRE','OCT':'OCTUBRE','NOV':'NOVIEMBRE','DIC':'DICIEMBRE'};
       var mes=MESES_ORD.indexOf(mesRaw)!==-1?mesRaw:(mesMap[mesRaw.slice(0,3)]||'');
-      return{mes:mes,total:parseFloat(r[kTotal])||0};
+      // Columnas de personas: todo lo que no sea una columna conocida (Tania, Miranda, o la que se agregue después)
+      var personas={};
+      keys.forEach(function(k){
+        var kNorm=k.toLowerCase().trim();
+        if(kNorm===kMes||kNorm===kTotal)return;
+        if(COLUMNAS_CONOCIDAS.indexOf(kNorm)!==-1)return;
+        var val=parseFloat(r[k]);
+        if(!isNaN(val))personas[k.trim()]=val;
+      });
+      return{mes:mes,total:parseFloat(r[kTotal])||0,personas:personas};
     }).filter(function(r){return r.mes;});
     console.warn('[NmdpSoporte] meses cargados:',nmdpSoporteData.length);
     renderNmdpSoporte(getPageMes('srv'));
@@ -2777,13 +2793,35 @@ function renderNmdpSoporte(mes){
   var fila=mes?nmdpSoporteData.find(function(r){return r.mes===mes;}):null;
   if(elTot)elTot.textContent=mes?(fila?fila.total:0):nmdpSoporteData.reduce(function(s,r){return s+r.total;},0);
   if(elSub)elSub.textContent=mes?toTitleCase(mes):'Todos los meses';
-  if(!nmdpSoporteData.length){el.innerHTML='<div class="nc-wrap"><div style="padding:32px;color:#94a3b8;text-align:center">Sin datos</div></div>';if(elDelta)elDelta.innerHTML='';return;}
+  if(!nmdpSoporteData.length){el.innerHTML='<div class="nc-wrap"><div style="padding:32px;color:#94a3b8;text-align:center">Sin datos</div></div>';if(elDelta)elDelta.innerHTML='';var rowP0=document.getElementById('nmdpsop-personas-row');if(rowP0)rowP0.innerHTML='<div class="rd-stat-card" style="grid-column:1/-1"><div style="color:#94a3b8;font-size:.8rem">Sin datos</div></div>';return;}
   var mesesOrd=nmdpSoporteData.slice().sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
   if(elDelta){
     var idx=mes?mesesOrd.findIndex(function(m){return m.mes===mes;}):mesesOrd.length-1;
     elDelta.innerHTML=idx>=0?deltaChip(mesesOrd[idx].total,idx>0?mesesOrd[idx-1].total:null,'neutral'):'';
   }
   buildNcChart({containerId:'nc-nmdpsop',title:'🗂️ Conteo Mensual — Total por Mes',data:mesesOrd.map(function(m){return{label:m.mes.charAt(0)+m.mes.slice(1,3).toLowerCase(),primary:m.total,pct:null,_mes:m.mes};}),labelP:'Total',singleBar:true,activeMes:mes});
+
+  // ── Distribución de solicitudes por persona (columnas dinámicas: Tania, Miranda, o las que aparezcan) ──
+  var rowP=document.getElementById('nmdpsop-personas-row');
+  if(rowP){
+    var filasPersonas=mes?nmdpSoporteData.filter(function(r){return r.mes===mes;}):nmdpSoporteData;
+    var nombres=[];
+    filasPersonas.forEach(function(r){Object.keys(r.personas||{}).forEach(function(n){if(nombres.indexOf(n)===-1)nombres.push(n);});});
+    if(!nombres.length){
+      rowP.innerHTML='<div class="rd-stat-card" style="grid-column:1/-1"><div style="color:#94a3b8;font-size:.8rem">Sin datos de distribución por persona</div></div>';
+    } else {
+      rowP.style.gridTemplateColumns='repeat('+nombres.length+',1fr)';
+      var colores=['#2563a8','#16a34a','#7c3aed','#f59e0b','#0891b2','#ef4444'];
+      var totalesPersonas=nombres.map(function(n){return filasPersonas.reduce(function(s,r){return s+(r.personas&&r.personas[n]?r.personas[n]:0);},0);});
+      var sumaPersonas=totalesPersonas.reduce(function(s,v){return s+v;},0);
+      rowP.innerHTML=nombres.map(function(n,i){
+        var total=totalesPersonas[i];
+        var pct=sumaPersonas>0?(total/sumaPersonas*100):0;
+        var nombreLimpio=n.replace(/\([^)]*\)/g,'').trim()||n;
+        return'<div class="rd-stat-card"><div class="rd-stat-lbl">👤 '+nombreLimpio+'</div><div class="rd-stat-num" style="color:'+colores[i%colores.length]+'">'+total+'</div><div style="font-size:.7rem;color:#94a3b8;margin-top:2px">'+pct.toFixed(1)+'% del total</div><div class="score-bar" style="margin-top:6px"><div class="score-fill" style="width:'+pct+'%;background:'+colores[i%colores.length]+'"></div></div></div>';
+      }).join('');
+    }
+  }
 }
 async function loadCancelaciones(){
   try{

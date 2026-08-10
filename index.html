@@ -834,7 +834,7 @@
       <div class="slabel"><h2>⚠️ Casos con Comentario INCOMPLETO</h2></div>
       <div class="pend-summary">
         <div class="pend-stat" style="border-top-color:#f59e0b"><div class="ps-icon" style="background:#fef3c7">⚠️</div><div class="ps-val" id="ps-total">—</div><div class="ps-lbl">Total Incompletos</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-total" style="width:100%;background:#f59e0b"></div></div></div>
-        <div class="pend-stat" style="border-top-color:#25D366"><div class="ps-icon" style="background:#dcfce7">📱</div><div class="ps-val" id="ps-sin-whats">—</div><div class="ps-lbl">Sin WhatsApp</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-whats" style="width:0%;background:#25D366"></div></div></div>
+        <div class="pend-stat" style="border-top-color:#4A154B"><div class="ps-icon" style="background:#f3e8ff">💬</div><div class="ps-val" id="ps-sin-whats">—</div><div class="ps-lbl">Sin SLACK</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-whats" style="width:0%;background:#4A154B"></div></div></div>
         <div class="pend-stat" style="border-top-color:#FBBC04"><div class="ps-icon" style="background:#fef9c3">📁</div><div class="ps-val" id="ps-sin-drive">—</div><div class="ps-lbl">Sin Carpeta Drive</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-drive" style="width:0%;background:#FBBC04"></div></div></div>
         <div class="pend-stat" style="border-top-color:#8b5cf6"><div class="ps-icon" style="background:#f5f3ff">🎫</div><div class="ps-val" id="ps-sin-ticket">—</div><div class="ps-lbl">Sin Ticket Interno Zoho</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-ticket" style="width:0%;background:#8b5cf6"></div></div></div>
         <div class="pend-stat" style="border-top-color:#ef4444"><div class="ps-icon" style="background:#fee2e2">✉️</div><div class="ps-val" id="ps-sin-correos">—</div><div class="ps-lbl">Sin Correos</div><div class="ps-bar"><div class="ps-bar-fill" id="psb-correos" style="width:0%;background:#ef4444"></div></div></div>
@@ -852,7 +852,7 @@
           <thead><tr>
             <th class="col-fixed col-num">#</th><th class="col-fixed col-caso">Caso</th>
             <th class="col-fixed col-cliente">Cliente</th><th class="col-fixed col-unidad">Unidad</th>
-            <th class="col-check">📱 WhatsApp</th><th class="col-check">📁 Drive</th>
+            <th class="col-check">💬 SLACK</th><th class="col-check">📁 Drive</th>
             <th class="col-check">🎫 Ticket Interno</th>            <th class="col-check">✉️ Correos</th><th class="col-check">🖼️ Evidencias</th>
           </tr></thead>
           <tbody id="pend-tbody"><tr><td colspan="9" class="pend-empty">⏳ Cargando datos...</td></tr></tbody>
@@ -1420,7 +1420,7 @@ async function loadAll(){
       var kCaso=keys.find(function(k){return k.toLowerCase()==='caso';});
       var kCliente=keys.find(function(k){return k.toLowerCase()==='cliente';});
       var kUnidad=keys.find(function(k){return k.toLowerCase()==='unidad';});
-      var kWhatsapp=keys.find(function(k){return k.toLowerCase().indexOf('whatsapp')!==-1;});
+      var kWhatsapp=keys.find(function(k){return k.toLowerCase().indexOf('slack')!==-1;});
       var kDrive=keys.find(function(k){return k.toLowerCase()==='drive';});
       var kReporte=keys.find(function(k){return k.toLowerCase().indexOf('reporte en cuenta')!==-1;});
       var kCorreo=keys.find(function(k){return k.toLowerCase().indexOf('correo')!==-1;});

@@ -1104,6 +1104,17 @@ var MESES_ORD=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO'
 var mLabel=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var ESPECIALISTAS=['BERENICE DOMINGUEZ','CRISTIAN CAMARILLO','DANIEL BARAJAS','JOANA GOMEZ','RAFAEL MARTINEZ','RICARDO MICHACA'];
 var EXCLUIR_DESEMPENO=['OSCAR ALDAY','JOSELYNE CONTRERAS'];
+// Agentes que cambiaron de rol a Especialista a partir de cierto mes (antes de ese mes cuentan como Monitorista)
+var ESPECIALISTAS_DESDE={'BRENDA CASTILLO':'JULIO'};
+// Determina si "nombreNorm" (ya normalizado) debe tratarse como Especialista para el mes dado.
+// mesRow=null/'' (vista "Todos") => se considera Especialista (no hay desglose mensual disponible en todas las fuentes).
+function esEspecialistaEnMes(nombreNorm,mesRow){
+  if(ESPECIALISTAS.includes(nombreNorm))return true;
+  var desde=ESPECIALISTAS_DESDE[nombreNorm];
+  if(!desde)return false;
+  if(!mesRow)return true;
+  return MESES_ORD.indexOf(mesRow)>=MESES_ORD.indexOf(desde);
+}
 var PLATAFORMA_A_COMPANIA={'TECNOMETRICS':'TECNOCONTROL','UTRAX':'TECNOCONTROL','RECUPERAMOVIL':'SMARTTRACKER','EASYTRACK':'EASYTRACK','INBURSA':'INBURSA'};
 var COMPANIAS_DISPLAY=[{nombre:'TECNOCONTROL',icono:'🛰️',meta:90},{nombre:'SMARTTRACKER',icono:'📡',meta:90},{nombre:'EASYTRACK',icono:'🗺️',meta:90},{nombre:'INBURSA',icono:'🏦',meta:90}];
 var INTERVALOS=['- 30 MINUTOS','30 MINUTOS - 1 HR','1-3 HRS.','3-12 HRS.','12 HRS - 1 DÍA.','> 1 DÍA','> 2 DÍAS','1 SEMANA O MÁS'];
@@ -2359,14 +2370,14 @@ function renderDesempeno(mes){
   var porAgenteM={};
   filas.forEach(function(r){
     var a=norm(r.monitorista||'Sin asignar');
-    if(ESPECIALISTAS.includes(a))return;
+    if(esEspecialistaEnMes(a,r.mes))return;
     if(EXCLUIR_DESEMPENO.includes(a))return;
     if(!porAgenteM[a])porAgenteM[a]={nombre:r.monitorista||'Sin asignar',total:0,rec:0};
     porAgenteM[a].total++;
     if(r.recuperado==='si')porAgenteM[a].rec++;
   });
   // Fuente 2: tickets Zoho — incluir TODOS los monitoristas aunque no tengan recuperaciones
-  var monZoho=zohoAgentes.filter(function(a){return!ESPECIALISTAS.includes(norm(a.nombre))&&!EXCLUIR_DESEMPENO.includes(norm(a.nombre));});
+  var monZoho=zohoAgentes.filter(function(a){return!esEspecialistaEnMes(norm(a.nombre),mes)&&!EXCLUIR_DESEMPENO.includes(norm(a.nombre));});
   monZoho.forEach(function(a){
     var k=norm(a.nombre);
     if(!porAgenteM[k])porAgenteM[k]={nombre:a.nombre,total:0,rec:0};
@@ -2404,14 +2415,14 @@ function renderDesempeno(mes){
   var porAgenteE={};
   filas.forEach(function(r){
     var a=norm(r.monitorista||'Sin asignar');
-    if(!ESPECIALISTAS.includes(a))return;
+    if(!esEspecialistaEnMes(a,r.mes))return;
     if(EXCLUIR_DESEMPENO.includes(a))return;
     if(!porAgenteE[a])porAgenteE[a]={nombre:r.monitorista||'Sin asignar',total:0,rec:0};
     porAgenteE[a].total++;
     if(r.recuperado==='si')porAgenteE[a].rec++;
   });
   // Fuente 2: tickets Zoho — incluir TODOS los especialistas aunque no tengan recuperaciones
-  var espZoho=zohoAgentes.filter(function(a){return ESPECIALISTAS.includes(norm(a.nombre))&&!EXCLUIR_DESEMPENO.includes(norm(a.nombre));});
+  var espZoho=zohoAgentes.filter(function(a){return esEspecialistaEnMes(norm(a.nombre),mes)&&!EXCLUIR_DESEMPENO.includes(norm(a.nombre));});
   espZoho.forEach(function(a){
     var k=norm(a.nombre);
     if(!porAgenteE[k])porAgenteE[k]={nombre:a.nombre,total:0,rec:0};

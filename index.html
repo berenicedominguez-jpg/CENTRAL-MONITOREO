@@ -574,7 +574,8 @@
       </div>
       <div class="rd-section-head rd-sh-blue">🏢 Recuperación por Compañía</div>
       <div class="grid g4" id="rec-companias" style="margin-bottom:22px"></div>
-      <div id="nc-meses-numaris"></div><div id="nc-meses-inbursa"></div>
+      <div id="nc-meses-numaris"></div>
+      <div id="nc-meses-inbursa"></div>
       <div class="rd-section-head rd-sh-amber">⏱️ Porcentaje de Recuperación por Intervalos de Tiempo</div>
       <div class="rd-wrap" style="margin-bottom:22px">
         <div class="rd-wrap-head"><span class="rd-wrap-title">Tiempo de reporte del cliente</span></div>
@@ -1716,9 +1717,9 @@ async function renderResumen(){
           +(totalSolic>0?'<div style="margin-top:3px"><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;background:#f5f3ff;color:#7c3aed;font-weight:700">📦 '+totalSolic+' solicitudes totales</span></div>':'');
       } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
         var kw=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
-        var rowsMes=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw);});
-        var rec=rowsMes.reduce(function(s,r){return s+r.recup;},0);
-        var noRec=rowsMes.reduce(function(s,r){return s+r.noRec;},0);
+        var rowsMes=filasKpiRecuperacion().filter(function(r){return r.mes===m&&normTipo(r.tipo).indexOf(kw)!==-1;});
+        var rec=rowsMes.filter(function(r){return r.recuperado==='si';}).length;
+        var noRec=rowsMes.length-rec;
         var total=rec+noRec;
         if(total>0){
           detalleHtml='<div style="margin-top:3px">'
@@ -1803,15 +1804,15 @@ function computeKpiValoresPorMes(kid,kTipo,kMeta,mesesFiltro){
 
   var kw=kid==='robos'?'rob':kid==='abusos'?'abu':'cred';
   var porMes={};
-  recData.forEach(function(r){if(mesesFiltro.indexOf(r.mes)===-1)return;if(!r.tipo.includes(kw))return;if(!porMes[r.mes])porMes[r.mes]={recup:0,noRec:0};porMes[r.mes].recup+=r.recup;porMes[r.mes].noRec+=r.noRec;});
+  filasKpiRecuperacion().forEach(function(r){if(mesesFiltro.indexOf(r.mes)===-1)return;if(normTipo(r.tipo).indexOf(kw)===-1)return;if(!porMes[r.mes])porMes[r.mes]={recup:0,noRec:0};if(r.recuperado==='si')porMes[r.mes].recup++;else porMes[r.mes].noRec++;});
   Object.keys(porMes).forEach(function(m){var d=porMes[m],t=d.recup+d.noRec;var pct=t>0?(d.recup/t)*100:null;result[m]={val:pct,cumple:pct!==null?pct>=kMeta:null};});
   return result;
 }
 
 function renderMensual(mes){
-  var rows=mes?recData.filter(function(r){return r.mes===mes;}):recData;
+  var rows=mes?filasKpiRecuperacion().filter(function(r){return r.mes===mes;}):filasKpiRecuperacion();
   var agg={};
-  rows.forEach(function(r){if(!agg[r.tipo])agg[r.tipo]={recup:0,noRec:0};agg[r.tipo].recup+=r.recup;agg[r.tipo].noRec+=r.noRec;});
+  rows.forEach(function(r){var t=normTipo(r.tipo)||'sin categoría';if(!agg[t])agg[t]={recup:0,noRec:0};if(r.recuperado==='si')agg[t].recup++;else agg[t].noRec++;});
   Object.keys(agg).forEach(function(k){var t=agg[k].recup+agg[k].noRec;agg[k].pct=t>0?(agg[k].recup/t)*100:null;});
   var find=function(t){var k=Object.keys(agg).find(function(k){return k.includes(t);});return k?agg[k]:null;};
   setKPI('robos',find('rob'),90);setKPI('abusos',find('abu'),80);setKPI('creditos',find('cred'),90);
@@ -1831,13 +1832,20 @@ function renderRecuperaciones(mes){
     var plats=[...new Set(rows.map(function(r){return r.plataforma;}))].filter(Boolean);
     return'<div class="comp-card '+status+'"><div class="comp-title">'+c.icono+' '+c.nombre+'<span class="comp-sub">Meta ≥ '+c.meta+'%</span></div><div class="comp-grid"><div class="comp-stat"><span class="val">'+(total||'—')+'</span><span class="lbl">Total casos</span></div><div class="comp-stat"><span class="val blue">'+(rec||'—')+'</span><span class="lbl">Recuperadas</span></div><div class="comp-stat"><span class="val red">'+(noRec||'—')+'</span><span class="lbl">No recuperadas</span></div><div class="comp-stat"><span class="comp-pct '+status+'">'+(pct!==null?pct.toFixed(2)+'%':'—')+'</span><span class="lbl">% Recuperación</span></div></div><div class="comp-divider"></div><div class="comp-bar"><div class="comp-bar-fill '+status+'" style="width:'+(pct?Math.min(pct,100):0)+'%"></div></div><div class="comp-platforms">'+(plats.length?plats.map(function(p){return'<span class="comp-platform-tag">'+p+'</span>';}).join(''):'<span class="comp-platform-tag">Sin datos</span>')+'</div></div>';
   }).join('');
-  var buildMes=function(cid,title,companias){
+  var buildMes=function(cid,title,companias,conCategoria,companiasSinFiltroTicket){
+    companiasSinFiltroTicket=companiasSinFiltroTicket||[];
+    var filasFiltradas=robosData.filter(function(r){
+      if(!companias.includes(r.compania))return false;
+      if(companiasSinFiltroTicket.includes(r.compania))return true;
+      return r.ticketZoho==='SI'||r.ticketZoho==='NO';
+    });
     var porMes={};
-    robosData.filter(function(r){return(r.ticketZoho==='SI'||r.ticketZoho==='NO')&&companias.includes(r.compania);}).forEach(function(r){if(!r.mes)return;if(!porMes[r.mes])porMes[r.mes]={rec:0,noRec:0};if(r.recuperado==='si')porMes[r.mes].rec++;else porMes[r.mes].noRec++;});
+    filasFiltradas.forEach(function(r){if(!r.mes)return;if(!porMes[r.mes])porMes[r.mes]={rec:0,noRec:0};if(r.recuperado==='si')porMes[r.mes].rec++;else porMes[r.mes].noRec++;});
     var mesesOrd=Object.keys(porMes).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
     buildNcChart({containerId:cid,title:title,data:mesesOrd.map(function(m){var d=porMes[m],total=d.rec+d.noRec;return{label:m.charAt(0)+m.slice(1,3).toLowerCase(),primary:d.rec,secondary:d.noRec,pct:total>0?(d.rec/total*100):null,_mes:m};}),labelP:'Unidad Recuperada',labelS:'Unidad No Recuperada',singleBar:false,activeMes:mes});
+    if(conCategoria)renderCategoriaMensual(mes,cid,filasFiltradas);
   };
-  buildMes('nc-meses-numaris','📊 Recuperaciones por Mes — NUMARIS',['TECNOCONTROL','SMARTTRACKER','EASYTRACK']);
+  buildMes('nc-meses-numaris','📊 Recuperaciones por Mes — NUMARIS',['TECNOCONTROL','SMARTTRACKER'],true);
   buildMes('nc-meses-inbursa','📊 Recuperaciones por Mes — INBURSA',['INBURSA']);
   var porIntervalo={};INTERVALOS.forEach(function(i){porIntervalo[i]={total:0,rec:0};});
   function normalizarIntervalo(str){return str.toUpperCase().trim().replace(/\s*-\s*/g,'-').replace(/\./g,'').replace(/\s+/g,' ');}
@@ -1850,6 +1858,69 @@ function renderRecuperaciones(mes){
     return'<tr><td><b>'+iv+'</b></td><td>'+d.total+'</td><td>'+d.rec+'</td><td>'+noRec+'</td><td><span style="color:'+(p>=90?'#1d4ed8':'#b91c1c')+';font-weight:700">'+pct+'%</span></td><td><span class="pill '+nivelCls+'">'+nivel+'</span></td></tr>';
   }).join('');
 }
+
+// Estilo visual por categoría — detecta por palabra clave en el nombre de la categoría; si no matchea ninguna, usa un estilo genérico (self-maintaining ante categorías nuevas)
+// Normaliza el "tipo de evento" (quita acentos, minúsculas) para clasificar por palabra clave de forma consistente en todo el dashboard
+function normTipo(t){return String(t||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+// Filas de robosData elegibles para KPIs de recuperación: exige ticket Zoho SI/NO, salvo EASYTRACK que no lo requiere
+function filasKpiRecuperacion(){
+  return robosData.filter(function(r){
+    if(r.compania==='EASYTRACK')return true;
+    return r.ticketZoho==='SI'||r.ticketZoho==='NO';
+  });
+}
+
+function estiloCategoria(tipoNorm){
+  if(tipoNorm.indexOf('rob')!==-1)return{icon:'🚨',color:'#a32d2d',bg:'#fcebeb'};
+  if(tipoNorm.indexOf('cobr')!==-1)return{icon:'💰',color:'#854f0b',bg:'#faeeda'};
+  if(tipoNorm.indexOf('cred')!==-1)return{icon:'💳',color:'#0f6e56',bg:'#eaf3de'};
+  if(tipoNorm.indexOf('abus')!==-1)return{icon:'⚠️',color:'#7c3aed',bg:'#f5f3ff'};
+  return{icon:'📁',color:'#64748b',bg:'#f1f5f9'};
+}
+
+function renderCategoriaMensual(mes,cid,filasNumaris){
+  var el=document.querySelector('#'+cid+' .nc-wrap');if(!el)return;
+  var existente=el.querySelector('.categoria-block');if(existente)existente.remove();
+  // Normaliza el "tipo de evento" igual que se normaliza en otras partes del dashboard, para agrupar de forma consistente
+  function normTipo(t){return String(t||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'')||'sin categoría';}
+  var rows=filasNumaris; // exactamente las mismas filas que arman la gráfica de barras — así los totales siempre coinciden
+  if(!rows||!rows.length)return;
+  var porMes={},catsSet={};
+  rows.forEach(function(r){
+    if(!r.mes)return;
+    var t=normTipo(r.tipo);
+    if(!porMes[r.mes])porMes[r.mes]={};
+    if(!porMes[r.mes][t])porMes[r.mes][t]={rec:0,noRec:0};
+    if(r.recuperado==='si')porMes[r.mes][t].rec++;else porMes[r.mes][t].noRec++;
+    catsSet[t]=true;
+  });
+  var mesesOrd=Object.keys(porMes).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
+  var catsOrd=Object.keys(catsSet).sort();
+  var head='<tr><th style="text-align:left;padding:10px 12px;font-size:.72rem;color:#64748b;border-bottom:2px solid #e2e8f0">Mes</th>'
+    +catsOrd.map(function(t){var st=estiloCategoria(t);return'<th style="text-align:center;padding:10px 12px;font-size:.78rem;font-weight:700;color:'+st.color+';background:'+st.bg+'">'+st.icon+' '+toTitleCase(t)+'</th>';}).join('')
+    +'</tr>';
+  var body=mesesOrd.map(function(m){
+    var isAct=mes&&m===mes;
+    var cells=catsOrd.map(function(t){
+      var d=porMes[m][t];
+      if(!d)return'<td style="text-align:center;padding:10px 12px;color:#cbd5e1;font-size:.85rem">—</td>';
+      var total=d.rec+d.noRec,pct=total>0?(d.rec/total*100):null;
+      return'<td style="text-align:center;padding:10px 12px">'
+        +'<span style="font-size:1.05rem;font-weight:800;color:#0f6e56">'+d.rec+'</span>'
+        +'<span style="color:#cbd5e1;margin:0 4px">/</span>'
+        +'<span style="font-size:1.05rem;font-weight:800;color:#a32d2d">'+d.noRec+'</span>'
+        +'<div style="font-size:.65rem;color:#94a3b8;margin-top:2px">'+(pct!==null?pct.toFixed(1)+'% efectividad':'')+'</div>'
+        +'</td>';
+    }).join('');
+    return'<tr style="border-bottom:1px solid #f1f5f9'+(isAct?';background:#eff6ff':'')+'"><td style="padding:10px 12px;font-size:.8rem;font-weight:700;color:#334155">'+toTitleCase(m)+(isAct?' <span style="color:#185fa5;font-weight:600;font-size:.65rem">· activo</span>':'')+'</td>'+cells+'</tr>';
+  }).join('');
+  el.insertAdjacentHTML('beforeend','<div class="categoria-block" style="margin-top:18px;padding-top:16px;border-top:1px solid #e2e8f0;overflow-x:auto">'
+    +'<div style="font-size:.72rem;font-weight:700;color:#334155;margin-bottom:10px">🗂️ Recuperaciones por Categoría</div>'
+    +'<div style="font-size:.68rem;color:#94a3b8;margin-bottom:12px"><span style="color:#0f6e56;font-weight:700">Verde</span> = recuperadas &nbsp;·&nbsp; <span style="color:#a32d2d;font-weight:700">Rojo</span> = no recuperadas</div>'
+    +'<table style="width:100%;border-collapse:collapse;min-width:520px">'+head+body+'</table>'
+    +'</div>');
+}
+
 
 function renderServicio(mes){
   currentServicioMes=mes||'';
@@ -3186,9 +3257,9 @@ function exportPDF(){
           +'</div>';
       } else if(k.id==='robos'||k.id==='abusos'||k.id==='creditos'){
         var kw2=k.id==='robos'?'rob':k.id==='abusos'?'abu':'cred';
-        var rowsMesPdf=recData.filter(function(r){return r.mes===m&&r.tipo.includes(kw2);});
-        var recPdf=rowsMesPdf.reduce(function(s,r){return s+r.recup;},0);
-        var noRecPdf=rowsMesPdf.reduce(function(s,r){return s+r.noRec;},0);
+        var rowsMesPdf=filasKpiRecuperacion().filter(function(r){return r.mes===m&&normTipo(r.tipo).indexOf(kw2)!==-1;});
+        var recPdf=rowsMesPdf.filter(function(r){return r.recuperado==='si';}).length;
+        var noRecPdf=rowsMesPdf.length-recPdf;
         var totalPdf=recPdf+noRecPdf;
         if(totalPdf>0) detalleHtml='<div style="margin-top:2px">'
           +'<span style="font-size:5.5pt;padding:1px 5px;border-radius:99px;background:#dcfce7;color:#15803d;margin-right:2px">'+recPdf+' rec.</span>'

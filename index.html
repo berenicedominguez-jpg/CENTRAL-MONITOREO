@@ -2641,6 +2641,31 @@ async function fetchSheetConFallback(nombres){
 }
 async function loadWhatsappCM(){
   try{
+    var json=await fetchSheetConFallback(['WHATSAPP_CM_MENSUAL']);
+    if(json&&json.rows&&json.rows.length){
+      // Fuente nueva: totales ya calculados por mes (permite depurar MON1/MON7 sin perder historial)
+      var expandido=[];
+      json.rows.forEach(function(r){
+        var keys=Object.keys(r);
+        var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
+        var kAnio=keys.find(function(k){return k.toLowerCase().trim()==='anio';});
+        var kL1=keys.find(function(k){return k.toLowerCase().trim()==='linea1';});
+        var kL2=keys.find(function(k){return k.toLowerCase().trim()==='linea2';});
+        var mes=String(r[kMes]||'').toUpperCase().trim();
+        var anio=r[kAnio]?Number(r[kAnio]):'';
+        var l1=Number(r[kL1])||0,l2=Number(r[kL2])||0;
+        if(!mes)return;
+        // Se reconstruyen entradas "placeholder" (sin contenido real) solo para que el resto
+        // del dashboard, que cuenta con .filter(...).length, siga funcionando sin cambios.
+        for(var i=0;i<l1;i++)expandido.push({mes:mes,anio:anio,linea:1});
+        for(var i=0;i<l2;i++)expandido.push({mes:mes,anio:anio,linea:2});
+      });
+      whatsappCMData=expandido;
+      console.warn('[WhatsappCM] usando totales pre-calculados (WHATSAPP_CM_MENSUAL) · '+expandido.length+' registros reconstruidos');
+      renderWhatsappCM(getPageMes('srv'));
+      return;
+    }
+    console.warn('[WhatsappCM] WHATSAPP_CM_MENSUAL vacía o no encontrada · usando conteo directo de MON1/MON7 como respaldo');
     var results=await Promise.all([
       fetchSheetConFallback(['MON1','MON 1']),
       fetchSheetConFallback(['MON7','MON 7'])

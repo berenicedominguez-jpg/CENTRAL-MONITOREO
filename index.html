@@ -1892,7 +1892,7 @@ function renderCategoriaMensual(mes,cid,filasNumaris){
   var mesesOrd=Object.keys(porMes).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
   var catsOrd=Object.keys(catsSet).sort();
   var head='<tr><th style="text-align:left;padding:10px 12px;font-size:.72rem;color:#64748b;border-bottom:2px solid #e2e8f0">Mes</th>'
-    +'<th style="text-align:center;padding:10px 12px;font-size:.78rem;font-weight:700;color:#334155;background:#eef2f7;border-right:2px solid #e2e8f0">Σ Total</th>'
+    +'<th style="text-align:center;padding:10px 12px;font-size:.78rem;font-weight:700;color:#334155">Σ Total</th>'
     +catsOrd.map(function(t){var st=estiloCategoria(t);return'<th style="text-align:center;padding:10px 12px;font-size:.78rem;font-weight:700;color:'+st.color+';background:'+st.bg+'">'+st.icon+' '+toTitleCase(t)+'</th>';}).join('')
     +'</tr>';
   var body=mesesOrd.map(function(m){
@@ -1911,11 +1911,10 @@ function renderCategoriaMensual(mes,cid,filasNumaris){
     var totRec=0,totNoRec=0;
     catsOrd.forEach(function(t){var d=porMes[m][t];if(d){totRec+=d.rec;totNoRec+=d.noRec;}});
     var totGen=totRec+totNoRec,pctGen=totGen>0?(totRec/totGen*100):null;
-    var celdaTotal='<td style="text-align:center;padding:10px 12px;background:#f8fafc;border-right:2px solid #e2e8f0">'
-      +'<span style="font-size:1.05rem;font-weight:800;color:#0f6e56">'+totRec+'</span>'
-      +'<span style="color:#cbd5e1;margin:0 4px">/</span>'
-      +'<span style="font-size:1.05rem;font-weight:800;color:#a32d2d">'+totNoRec+'</span>'
-      +'<div style="font-size:.65rem;color:#94a3b8;margin-top:2px">'+(pctGen!==null?pctGen.toFixed(1)+'% efectividad':'')+'</div>'
+    var celdaTotal='<td style="text-align:center;padding:10px 12px">'
+      +'<span style="font-size:1.15rem;font-weight:800;color:#0d2b4e">'+totGen+'</span>'
+      +'<div style="font-size:.62rem;color:#94a3b8;margin-top:2px"><span style="color:#0f6e56;font-weight:700">'+totRec+'</span> rec. · <span style="color:#a32d2d;font-weight:700">'+totNoRec+'</span> no rec.</div>'
+      +'<div style="font-size:.65rem;color:#94a3b8;margin-top:1px">'+(pctGen!==null?pctGen.toFixed(1)+'% efectividad':'')+'</div>'
       +'</td>';
     return'<tr style="border-bottom:1px solid #f1f5f9'+(isAct?';background:#eff6ff':'')+'"><td style="padding:10px 12px;font-size:.8rem;font-weight:700;color:#334155">'+toTitleCase(m)+(isAct?' <span style="color:#185fa5;font-weight:600;font-size:.65rem">· activo</span>':'')+'</td>'+celdaTotal+cells+'</tr>';
   }).join('');

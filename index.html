@@ -910,6 +910,17 @@
         </div>
       </div>
 
+      <!-- Expedientes por recuperador (mini-cards) -->
+      <div class="fin-table-wrap" style="margin-bottom:24px">
+        <div class="fin-table-head">
+          <span class="fin-table-title">🕵️ Expedientes por Recuperador</span>
+          <span class="fin-table-badge" id="nmdp-recup-total-badge">Total: —</span>
+        </div>
+        <div id="nmdp-recup-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;padding:16px">
+          <div class="fin-empty">⏳ Cargando...</div>
+        </div>
+      </div>
+
       <!-- Tabla rezagados históricos -->
       <div class="fin-table-wrap" style="margin-bottom:24px">
         <div class="fin-table-head">
@@ -1123,6 +1134,7 @@ var CON_MAP={'general':['GENERAL','CONECTIVIDAD GENERAL'],'legacy':['LEGACY'],'s
 var CHART_H=200;
 var now=new Date();
 var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={},rezagadosData=[],monitoreoData=[],capacitacionesData=[];
+var expedientesRecuperadorData={nombres:[],metrics:{}};
 var solicitudesData=[],conectividadData={},whatsappCMData=[];
 var frtFallbackMap={},frtFallbackGlobal=0;
 var zohoHistorial={},zohoHistorialTotal={},conectividadHistorial={};
@@ -1456,6 +1468,7 @@ async function loadAll(){
     if(j5&&!j5.error){
       expedientesData={total:0,online:0,offline:0};
       rezagadosData=[];
+      expedientesRecuperadorData={nombres:[],metrics:{}};
       nmdpData=(j5.rows||[]).map(function(r){
         var keys=Object.keys(r);
         var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
@@ -1485,6 +1498,22 @@ async function loadAll(){
             valor:parseFloat(r[kRezVal]||0)||0,
             online:parseFloat(r[kRezOnline]||0)||0,
             offline:parseFloat(r[kRezOffline]||0)||0
+          });
+        }
+        // Parsear tabla "Expedientes por Recuperador" (columnas dinámicas, auto-detecta nuevos recuperadores)
+        var kRecuperador=keys.find(function(k){return k.toLowerCase().trim()==='recuperador';});
+        if(kRecuperador&&r[kRecuperador]&&String(r[kRecuperador]).trim()){
+          var etiquetaRec=String(r[kRecuperador]).trim().toUpperCase();
+          var colsConocidas=[kRecuperador,kMes,kRecQty,kRecMonto,kNoRecQty,kNoRecMonto,kViat,kTotalRec,kTotalCon,kNotas,kTotal,kOnline,kOffline,kRezMes,kRezVal,kRezOnline,kRezOffline];
+          keys.forEach(function(k){
+            if(colsConocidas.indexOf(k)!==-1)return;
+            var nombreRec=String(k).trim();
+            if(!nombreRec)return;
+            var valRec=r[k];
+            if(valRec===undefined||valRec===null||String(valRec).trim()==='')return;
+            if(expedientesRecuperadorData.nombres.indexOf(nombreRec)===-1)expedientesRecuperadorData.nombres.push(nombreRec);
+            if(!expedientesRecuperadorData.metrics[etiquetaRec])expedientesRecuperadorData.metrics[etiquetaRec]={};
+            expedientesRecuperadorData.metrics[etiquetaRec][nombreRec]=parseFloat(String(valRec).replace(/[$,]/g,''))||0;
           });
         }
         if(!mes)return null;
@@ -3384,6 +3413,8 @@ function renderExpedientes(){
     if(elOnBar)elOnBar.style.width=total>0?((online/total)*100)+'%':'0%';
     if(elOffBar)elOffBar.style.width=total>0?((offline/total)*100)+'%':'0%';
   },100);
+  // Tabla expedientes por recuperador (siempre muestra el snapshot actual, no depende del filtro de mes)
+  renderExpedientesRecuperador();
   // Tabla de rezagados (siempre muestra el historial completo)
   var tbody=document.getElementById('nmdp-rez-tbody');
   var badge=document.getElementById('nmdp-rez-total-badge');
@@ -3410,6 +3441,45 @@ function renderExpedientes(){
     +'<td style="text-align:right;color:#16a34a">'+totalOnline+'</td>'
     +'<td style="text-align:right;color:#ef4444">'+totalOffline+'</td>'
     +'<td style="text-align:right">100%</td></tr>';
+}
+
+var ORDEN_METRICAS_RECUP=['ONLINE','OFFLINE','RECUPERADAS','NO RECUPERADAS','PENDIENTES POR ENTREGAR'];
+var COLOR_METRICAS_RECUP={'ONLINE':'#2563a8','OFFLINE':'#64748b','RECUPERADAS':'#16a34a','NO RECUPERADAS':'#ef4444','PENDIENTES POR ENTREGAR':'#0f172a'};
+function capitalizarEtiqueta(s){return s.charAt(0)+s.slice(1).toLowerCase();}
+function renderExpedientesRecuperador(){
+  var cont=document.getElementById('nmdp-recup-cards');
+  var badge=document.getElementById('nmdp-recup-total-badge');
+  if(!cont)return;
+  var nombres=expedientesRecuperadorData.nombres||[];
+  var metrics=expedientesRecuperadorData.metrics||{};
+  if(!nombres.length||!Object.keys(metrics).length){
+    cont.innerHTML='<div class="fin-empty">Sin datos de recuperadores en el Sheet (columnas P,Q,R… hoja NMDP)</div>';
+    if(badge)badge.textContent='Total: —';
+    return;
+  }
+  // Orden de filas: primero las conocidas (en el orden esperado), luego cualquier otra etiqueta nueva
+  var etiquetas=Object.keys(metrics);
+  var ordenadas=ORDEN_METRICAS_RECUP.filter(function(e){return etiquetas.indexOf(e)!==-1;});
+  etiquetas.forEach(function(e){if(ordenadas.indexOf(e)===-1)ordenadas.push(e);});
+  var destacada='PENDIENTES POR ENTREGAR';
+  var filas=ordenadas.filter(function(e){return e!==destacada;});
+  var tieneDestacada=ordenadas.indexOf(destacada)!==-1;
+  cont.innerHTML=nombres.map(function(n){
+    var filasHtml=filas.map(function(et){
+      var v=(metrics[et]||{})[n];
+      var color=COLOR_METRICAS_RECUP[et]||'#334155';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:#64748b;padding:3px 0">'
+        +'<span>'+capitalizarEtiqueta(et)+'</span>'
+        +'<span style="color:'+color+';font-weight:600">'+(v!==undefined?v:'—')+'</span></div>';
+    }).join('');
+    var pieHtml=tieneDestacada?('<div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:8px 0 0;margin-top:6px;border-top:1px solid #e2e8f0">'
+      +'<span style="color:#64748b">'+capitalizarEtiqueta(destacada)+'</span>'
+      +'<span style="font-weight:700;color:#0f172a">'+((metrics[destacada]||{})[n]!==undefined?(metrics[destacada]||{})[n]:'—')+'</span></div>'):'';
+    return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px">'
+      +'<div style="font-size:.85rem;font-weight:700;color:#0f172a;margin-bottom:8px">'+n+'</div>'
+      +filasHtml+pieHtml+'</div>';
+  }).join('');
+  if(badge)badge.textContent='Total: '+nombres.length+' recuperador'+(nombres.length===1?'':'es');
 }
 
 function renderNMDP(){

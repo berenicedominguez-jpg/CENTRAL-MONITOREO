@@ -3446,6 +3446,7 @@ function renderExpedientes(){
 var ORDEN_METRICAS_RECUP=['ONLINE','OFFLINE','RECUPERADAS','NO RECUPERADAS','PENDIENTES POR ENTREGAR'];
 var COLOR_METRICAS_RECUP={'ONLINE':'#2563a8','OFFLINE':'#64748b','RECUPERADAS':'#16a34a','NO RECUPERADAS':'#ef4444','PENDIENTES POR ENTREGAR':'#0f172a'};
 function capitalizarEtiqueta(s){return s.charAt(0)+s.slice(1).toLowerCase();}
+function capitalizarNombre(s){return String(s).trim().toUpperCase();}
 function renderExpedientesRecuperador(){
   var cont=document.getElementById('nmdp-recup-cards');
   var badge=document.getElementById('nmdp-recup-total-badge');
@@ -3476,7 +3477,7 @@ function renderExpedientesRecuperador(){
       +'<span style="color:#64748b">'+capitalizarEtiqueta(destacada)+'</span>'
       +'<span style="font-weight:700;color:#0f172a">'+((metrics[destacada]||{})[n]!==undefined?(metrics[destacada]||{})[n]:'—')+'</span></div>'):'';
     return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px">'
-      +'<div style="font-size:.85rem;font-weight:700;color:#0f172a;margin-bottom:8px">'+n+'</div>'
+      +'<div style="font-size:.85rem;font-weight:700;color:#0f172a;margin-bottom:8px">'+capitalizarNombre(n)+'</div>'
       +filasHtml+pieHtml+'</div>';
   }).join('');
   if(badge)badge.textContent='Total: '+nombres.length+' recuperador'+(nombres.length===1?'':'es');

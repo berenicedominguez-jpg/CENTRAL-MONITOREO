@@ -882,30 +882,52 @@
       </div>
 
       <!-- Expedientes en proceso -->
-      <div class="slabel" style="margin-bottom:14px"><h2>📁 Expedientes en Proceso</h2></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
-        <div class="fin-kpi" style="border-bottom-color:#0d2b4e;text-align:center">
-          <span class="fin-kpi-icon">📂</span>
-          <div class="fin-kpi-label">Total Expedientes</div>
-          <div class="fin-kpi-val" id="nmdp-exp-total">—</div>
-          <div class="fin-kpi-sub">en proceso actualmente</div>
-        </div>
-        <div class="fin-kpi" style="border-bottom-color:#16a34a;text-align:center">
-          <span class="fin-kpi-icon">🌐</span>
-          <div class="fin-kpi-label">Online</div>
-          <div class="fin-kpi-val" style="color:#16a34a" id="nmdp-exp-online">—</div>
-          <div class="fin-kpi-sub" id="nmdp-exp-online-pct">— del total</div>
-          <div style="margin-top:10px;background:#e8eef5;border-radius:99px;height:6px;overflow:hidden">
-            <div id="nmdp-exp-online-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80);width:0%;transition:width 1s ease"></div>
+      <div class="slabel" style="margin-bottom:14px"><h2>📁 Expedientes</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px">
+        <div class="fin-kpi" style="border-bottom-color:#2563a8;text-align:center">
+          <span class="fin-kpi-icon">🗂️</span>
+          <div class="fin-kpi-label">Total</div>
+          <div class="fin-kpi-val" style="color:#2563a8" id="nmdp-exp-recup-total">—</div>
+          <div style="display:flex;gap:20px;justify-content:center;margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0">
+            <div style="flex:1">
+              <div style="font-size:.68rem;color:#16a34a;font-weight:700;letter-spacing:.5px">🌐 ONLINE</div>
+              <div style="font-size:1.3rem;font-weight:700;color:#16a34a" id="nmdp-exp-recup-online">—</div>
+              <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-recup-online-pct">— del total</div>
+              <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
+                <div id="nmdp-exp-recup-online-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80);width:0%;transition:width 1s ease"></div>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;color:#ef4444;font-weight:700;letter-spacing:.5px">📴 OFFLINE</div>
+              <div style="font-size:1.3rem;font-weight:700;color:#ef4444" id="nmdp-exp-recup-offline">—</div>
+              <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-recup-offline-pct">— del total</div>
+              <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
+                <div id="nmdp-exp-recup-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="fin-kpi" style="border-bottom-color:#ef4444;text-align:center">
-          <span class="fin-kpi-icon">📴</span>
-          <div class="fin-kpi-label">Offline</div>
-          <div class="fin-kpi-val" style="color:#ef4444" id="nmdp-exp-offline">—</div>
-          <div class="fin-kpi-sub" id="nmdp-exp-offline-pct">— del total</div>
-          <div style="margin-top:10px;background:#e8eef5;border-radius:99px;height:6px;overflow:hidden">
-            <div id="nmdp-exp-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
+        <div class="fin-kpi" style="border-bottom-color:#0d2b4e;text-align:center">
+          <span class="fin-kpi-icon">📂</span>
+          <div class="fin-kpi-label">Entregados en el Mes</div>
+          <div class="fin-kpi-val" id="nmdp-exp-total">—</div>
+          <div style="display:flex;gap:20px;justify-content:center;margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0">
+            <div style="flex:1">
+              <div style="font-size:.68rem;color:#16a34a;font-weight:700;letter-spacing:.5px">🌐 ONLINE</div>
+              <div style="font-size:1.3rem;font-weight:700;color:#16a34a" id="nmdp-exp-online">—</div>
+              <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-online-pct">— del total</div>
+              <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
+                <div id="nmdp-exp-online-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80);width:0%;transition:width 1s ease"></div>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;color:#ef4444;font-weight:700;letter-spacing:.5px">📴 OFFLINE</div>
+              <div style="font-size:1.3rem;font-weight:700;color:#ef4444" id="nmdp-exp-offline">—</div>
+              <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-offline-pct">— del total</div>
+              <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
+                <div id="nmdp-exp-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -3415,6 +3437,34 @@ function renderExpedientes(){
   },100);
   // Tabla expedientes por recuperador (siempre muestra el snapshot actual, no depende del filtro de mes)
   renderExpedientesRecuperador();
+  // Total de expedientes = suma de online + offline de cada recuperador
+  var elRecupTotal=document.getElementById('nmdp-exp-recup-total');
+  var elRecupOnline=document.getElementById('nmdp-exp-recup-online');
+  var elRecupOffline=document.getElementById('nmdp-exp-recup-offline');
+  var elRecupOnlineP=document.getElementById('nmdp-exp-recup-online-pct');
+  var elRecupOfflineP=document.getElementById('nmdp-exp-recup-offline-pct');
+  var elRecupOnlineBar=document.getElementById('nmdp-exp-recup-online-bar');
+  var elRecupOfflineBar=document.getElementById('nmdp-exp-recup-offline-bar');
+  if(elRecupTotal){
+    var mOn=expedientesRecuperadorData.metrics['ONLINE']||{};
+    var mOff=expedientesRecuperadorData.metrics['OFFLINE']||{};
+    var sumOn=0,sumOff=0;
+    (expedientesRecuperadorData.nombres||[]).forEach(function(n){
+      sumOn+=parseFloat(mOn[n])||0;
+      sumOff+=parseFloat(mOff[n])||0;
+    });
+    var hayRecup=(expedientesRecuperadorData.nombres||[]).length>0;
+    var totalRecup=sumOn+sumOff;
+    elRecupTotal.textContent=hayRecup?totalRecup:'—';
+    if(elRecupOnline)elRecupOnline.textContent=hayRecup?sumOn:'—';
+    if(elRecupOffline)elRecupOffline.textContent=hayRecup?sumOff:'—';
+    if(elRecupOnlineP)elRecupOnlineP.textContent=totalRecup>0?(((sumOn/totalRecup)*100).toFixed(2)+'% del total'):'— del total';
+    if(elRecupOfflineP)elRecupOfflineP.textContent=totalRecup>0?(((sumOff/totalRecup)*100).toFixed(2)+'% del total'):'— del total';
+    setTimeout(function(){
+      if(elRecupOnlineBar)elRecupOnlineBar.style.width=totalRecup>0?((sumOn/totalRecup)*100)+'%':'0%';
+      if(elRecupOfflineBar)elRecupOfflineBar.style.width=totalRecup>0?((sumOff/totalRecup)*100)+'%':'0%';
+    },100);
+  }
   // Tabla de rezagados (siempre muestra el historial completo)
   var tbody=document.getElementById('nmdp-rez-tbody');
   var badge=document.getElementById('nmdp-rez-total-badge');

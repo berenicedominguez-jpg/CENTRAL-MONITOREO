@@ -3767,7 +3767,19 @@ function renderNMDPDonut(rec,noRec){
  
    var porCat={};
    rows.forEach(function(r){porCat[r.solicitud]=(porCat[r.solicitud]||0)+r.total;});
-   var catsOrd=Object.keys(porCat).sort(function(a,b){return porCat[b]-porCat[a];});
+   function ordenSolicitudes(a,b,mapaConteo){
+     var an=a.toUpperCase().trim(),bn=b.toUpperCase().trim();
+     var aEsSinClas=an.indexOf('SIN CLASIFICAR')!==-1;
+     var bEsSinClas=bn.indexOf('SIN CLASIFICAR')!==-1;
+     var aEsRecup=an.indexOf('CASO RECUPERACION')!==-1||an.indexOf('CASO RECUPERACIÓN')!==-1;
+     var bEsRecup=bn.indexOf('CASO RECUPERACION')!==-1||bn.indexOf('CASO RECUPERACIÓN')!==-1;
+     if(aEsSinClas&&!bEsSinClas)return -1;
+     if(bEsSinClas&&!aEsSinClas)return 1;
+     if(aEsRecup&&!bEsRecup)return 1;
+     if(bEsRecup&&!aEsRecup)return -1;
+     return mapaConteo[b]-mapaConteo[a];
+   }
+   var catsOrd=Object.keys(porCat).sort(function(a,b){return ordenSolicitudes(a,b,porCat);});
    var elNC=document.getElementById('solic-num-cats');if(elNC)elNC.textContent=catsOrd.length||'—';
    var elTop=document.getElementById('solic-top-cat'),elTopSub=document.getElementById('solic-top-cat-sub');
    if(catsOrd.length){
@@ -3799,7 +3811,9 @@ function renderNMDPDonut(rec,noRec){
    var mesesOrd=Object.keys(porMes).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
    buildNcChart({containerId:'nc-solic-mensual',title:'📦 Total de Solicitudes por Mes',data:mesesOrd.map(function(m){return{label:m.charAt(0)+m.slice(1,3).toLowerCase(),primary:porMes[m],pct:null,_mes:m};}),labelP:'Total solicitudes',singleBar:true,activeMes:mes});
  
-   var catsGlobal=[...new Set(solicitudesResumenData.map(function(r){return r.solicitud;}))].sort();
+   var conteoGlobal={};
+   solicitudesResumenData.forEach(function(r){conteoGlobal[r.solicitud]=(conteoGlobal[r.solicitud]||0)+r.total;});
+   var catsGlobal=[...new Set(solicitudesResumenData.map(function(r){return r.solicitud;}))].sort(function(a,b){return ordenSolicitudes(a,b,conteoGlobal);});
    var headRow=document.getElementById('solic-tabla-head');
    if(headRow){
      headRow.innerHTML='<th style="text-align:left">Mes</th><th>Σ Total</th>'+catsGlobal.map(function(c){var st=estiloSolicitud(c);return'<th style="color:'+st.color+';background:'+st.bg+'">'+st.icon+' '+toTitleCase(c)+'</th>';}).join('');

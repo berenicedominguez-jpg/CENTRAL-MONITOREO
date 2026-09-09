@@ -3190,99 +3190,95 @@ function renderProyectosIA(){
   }
   buildNcChart({containerId:'nc-pia-chart',title:'📞 Llamados vs. 📋 Seguimiento Diario — '+toTitleCase(clienteSel),data:filas.map(function(r){return{label:(r.fecha.getDate())+'/'+(r.fecha.getMonth()+1),primary:r.llamados,secondary:r.seguimiento||0,pct:null};}),labelP:'Llamados',labelS:'Seguimiento diario',singleBar:false});
 }
+
 function renderAnalisisSoporte(mes){
-  // ── 1. TICKETS (Zoho) ──
+  // ── 1. TICKETS (Zoho) — histórico por mes ──
   var mesesConCache=MESES_ORD.filter(function(m){var c=zohoCacheGet(m);return c&&c.agentes&&c.agentes.length;});
   var porMesTickets=mesesConCache.map(function(m){
     var c=zohoCacheGet(m);
     var totalTickets=c.totalTickets||c.agentes.reduce(function(s,a){return s+(parseFloat(a.tickets)||0);},0);
     var totalMin=c.agentes.reduce(function(s,a){return s+(parseFloat(a.totalMinutes)||0);},0);
     var totalCount=c.agentes.reduce(function(s,a){return s+(parseFloat(a.count)||0);},0);
-    return{mes:m,tickets:totalTickets,frt:totalCount>0?(totalMin/totalCount):null};
+    return{mes:m,tickets:totalTickets,totalMin:totalMin,totalCount:totalCount,frt:totalCount>0?(totalMin/totalCount):null};
   });
   buildNcChart({containerId:'ansop-tendencia-tickets',title:'🎫 Tickets Internos por Mes',data:porMesTickets.map(function(d){return{label:d.mes.charAt(0)+d.mes.slice(1,3).toLowerCase(),primary:d.tickets,pct:null,_mes:d.mes};}),labelP:'Tickets internos',singleBar:true,activeMes:mes});
   buildNcChart({containerId:'ansop-tendencia-frt',title:'⏱️ Tiempo Prom. Respuesta por Mes (min)',data:porMesTickets.filter(function(d){return d.frt!==null;}).map(function(d){return{label:d.mes.charAt(0)+d.mes.slice(1,3).toLowerCase(),primary:Math.round(d.frt),pct:null,_mes:d.mes};}),labelP:'Minutos promedio',singleBar:true,activeMes:mes});
 
-  var ultimoTickets=mes?porMesTickets.find(function(d){return d.mes===mes;}):porMesTickets[porMesTickets.length-1];
-  var elMT=document.getElementById('ansop-mini-tickets'),elMTS=document.getElementById('ansop-mini-tickets-sub');
-  if(elMT)elMT.textContent=ultimoTickets?ultimoTickets.tickets:'—';
-  if(elMTS)elMTS.textContent=ultimoTickets&&ultimoTickets.frt!==null?('FRT '+Math.round(ultimoTickets.frt)+' min'):'FRT —';
-
-  // ── 1b. TICKETS EXTERNOS ──
-  var mesesExtDisponibles=[].concat(monitoreoData.map(function(r){return r.mes;}));
-  mesesExtDisponibles=mesesExtDisponibles.filter(function(m,i){return mesesExtDisponibles.indexOf(m)===i;}).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
-  var mesRefExt=mes||mesesExtDisponibles[mesesExtDisponibles.length-1];
-  var totalExtMes=monitoreoData.filter(function(r){return r.mes===mesRefExt;}).reduce(function(s,r){return s+r.enviados;},0);
-  var elMExt=document.getElementById('ansop-mini-externos');
-  if(elMExt)elMExt.textContent=mesesExtDisponibles.length?totalExtMes:'—';
-
-  // ── 2. CAPACITACIONES ──
-  var capacRow=mes?srvData.find(function(r){return r.mes===mes;}):srvData[srvData.length-1];
-  var elMC=document.getElementById('ansop-mini-capac');
-  if(elMC)elMC.textContent=capacRow?capacRow.total:'—';
-
-  // ── 3. WHATSAPP CM ── (por mes, agregado ambas líneas)
+  // ── DATOS AUXILIARES ordenados cronológicamente (mismos arreglos que usa Carga Operativa) ──
+  var mesesNM=nmdpSoporteData.slice().sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
+  var mesesCA=cancelacionesData.slice().sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
+  var srvOrd=srvData.slice().sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
   var porMesWA={};
   whatsappCMData.forEach(function(r){if(!porMesWA[r.mes])porMesWA[r.mes]=0;porMesWA[r.mes]++;});
-  var mesesWA=Object.keys(porMesWA).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
-  buildNcChart({containerId:'ansop-tendencia-whatsapp',title:'📱 WhatsApp Pertenece a CM por Mes',data:mesesWA.map(function(m){return{label:m.charAt(0)+m.slice(1,3).toLowerCase(),primary:porMesWA[m],pct:null,_mes:m};}),labelP:'Solicitudes',singleBar:true,activeMes:mes});
-  var elMW=document.getElementById('ansop-mini-whatsapp');
-  if(elMW){var refWA=mes||mesesWA[mesesWA.length-1];elMW.textContent=refWA&&porMesWA[refWA]!==undefined?porMesWA[refWA]:'—';}
+  var byMesExternos={};
+  monitoreoData.forEach(function(r){if(!byMesExternos[r.mes])byMesExternos[r.mes]=0;byMesExternos[r.mes]+=r.enviados;});
+  var byMesEquiposRev={};
+  revisionEquiposRaw.forEach(function(r){var k=MESES_ORD[r.fecha.getMonth()];if(!byMesEquiposRev[k])byMesEquiposRev[k]=0;byMesEquiposRev[k]+=r.rev;});
+  var anioRef=new Date().getFullYear();
+  function diasEnMes(m){var idx=MESES_ORD.indexOf(m);return idx>=0?new Date(anioRef,idx+1,0).getDate():30;}
 
-  // ── 4. SEGUIMIENTO NMDP ──
-  var mesesNM=nmdpSoporteData.slice().sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
-  buildNcChart({containerId:'ansop-tendencia-nmdp',title:'🗂️ Seguimiento NMDP por Mes',data:mesesNM.map(function(m){return{label:m.mes.charAt(0)+m.mes.slice(1,3).toLowerCase(),primary:m.total,pct:null,_mes:m.mes};}),labelP:'Total',singleBar:true,activeMes:mes});
-  var filaNM=mes?nmdpSoporteData.find(function(r){return r.mes===mes;}):mesesNM[mesesNM.length-1];
-  var elMN=document.getElementById('ansop-mini-nmdp');
-  if(elMN)elMN.textContent=filaNM?filaNM.total:'—';
-
-  // ── 5. CANCELACIONES ──
-  var mesesCA=cancelacionesData.slice().sort(function(a,b){return MESES_ORD.indexOf(a.mes)-MESES_ORD.indexOf(b.mes);});
-  buildNcChart({containerId:'ansop-tendencia-cancelaciones',title:'❌ Cancelaciones por Mes',data:mesesCA.map(function(m){return{label:m.mes.charAt(0)+m.mes.slice(1,3).toLowerCase(),primary:m.total,pct:null,_mes:m.mes};}),labelP:'Cancelaciones',singleBar:true,activeMes:mes});
-  var filaCA=mes?cancelacionesData.find(function(r){return r.mes===mes;}):mesesCA[mesesCA.length-1];
-  var elMCa=document.getElementById('ansop-mini-cancel');
-  if(elMCa)elMCa.textContent=filaCA?filaCA.total:'—';
-
-  // ── 6. REVISIÓN DE EQUIPOS (acumulado hasta el mes seleccionado) ──
-  var filasEq=revisionEquiposRaw;
-  if(mes){
-    var rowsDelMesEq=revisionEquiposRaw.filter(function(r){return MESES_ORD[r.fecha.getMonth()]===mes;});
-    if(rowsDelMesEq.length){var cortTsEq=Math.max.apply(null,rowsDelMesEq.map(function(r){return r.fechaTs;}));filasEq=revisionEquiposRaw.filter(function(r){return r.fechaTs<=cortTsEq;});}
-    else filasEq=[];
+  // ── DETERMINAR EL CONJUNTO DE MESES A USAR (igual para cards y gráfico) ──
+  var mesesCarga=mes?[mes]:mesesConCache.slice();
+  if(!mes){
+    [Object.keys(porMesWA),mesesNM.map(function(x){return x.mes;}),mesesCA.map(function(x){return x.mes;}),Object.keys(byMesEquiposRev),srvOrd.map(function(x){return x.mes;})].forEach(function(arr){
+      arr.forEach(function(m){if(mesesCarga.indexOf(m)===-1)mesesCarga.push(m);});
+    });
   }
-  var gruposEq={};
-  filasEq.forEach(function(r){
-    var key=r.plataforma+'||'+r.cuenta;
-    if(!gruposEq[key])gruposEq[key]={plataforma:r.plataforma,cuenta:r.cuenta,total:r.total,acumRev:0,acumInc:0};
-    gruposEq[key].acumRev+=r.rev;gruposEq[key].acumInc+=r.incidencias;
-    if(r.total>gruposEq[key].total)gruposEq[key].total=r.total;
+
+  // ── ACUMULAR CADA FUENTE SOBRE mesesCarga (una sola vez, se reusa en cards + gráfico) ──
+  var sumaTotalCarga=0,sumaDiasCarga=0;
+  var compInternos=0,compExternos=0,compWA=0,compEq=0,compCanc=0,compCapac=0,compNM=0;
+  var compMinTickets=0,compCountTickets=0;
+  mesesCarga.forEach(function(m){
+    var pt=porMesTickets.find(function(x){return x.mes===m;});
+    var ti=pt?pt.tickets:0;
+    var te=byMesExternos[m]||0;
+    var wa=porMesWA[m]||0;
+    var eq=byMesEquiposRev[m]||0;
+    var ca=(mesesCA.find(function(x){return x.mes===m;})||{}).total||0;
+    var cp=(srvOrd.find(function(x){return x.mes===m;})||{}).total||0;
+    var nm=(mesesNM.find(function(x){return x.mes===m;})||{}).total||0;
+    compInternos+=ti;compExternos+=te;compWA+=wa;compEq+=eq;compCanc+=ca;compCapac+=cp;compNM+=nm;
+    if(pt){compMinTickets+=pt.totalMin;compCountTickets+=pt.totalCount;}
+    sumaTotalCarga+=(ti+te+wa+eq+ca+cp+nm);
+    sumaDiasCarga+=diasEnMes(m);
   });
-  var listaEq=Object.values(gruposEq).map(function(g){var pct=g.total>0?Math.min(g.acumRev/g.total*100,100):0;return{plataforma:g.plataforma,cuenta:g.cuenta,pct:pct,incidencias:g.acumInc};});
-  var sumRevAcum=Object.values(gruposEq).reduce(function(s,g){return s+Math.min(g.acumRev,g.total);},0);
-  var sumTotalEq=Object.values(gruposEq).reduce(function(s,g){return s+g.total;},0);
-  var pctGlobalEq=sumTotalEq>0?(sumRevAcum/sumTotalEq*100):0;
-  var incGlobalEq=listaEq.reduce(function(s,g){return s+g.incidencias;},0);
+  var frtAgregado=compCountTickets>0?(compMinTickets/compCountTickets):null;
+
+  // ── 2. MINI-CARDS DE PANORAMA GENERAL — mismo acumulado que el gráfico ──
+  var elMT=document.getElementById('ansop-mini-tickets'),elMTS=document.getElementById('ansop-mini-tickets-sub');
+  if(elMT)elMT.textContent=compInternos||'—';
+  if(elMTS)elMTS.textContent=frtAgregado!==null?('FRT '+Math.round(frtAgregado)+' min'):'FRT —';
+
+  var elMExt=document.getElementById('ansop-mini-externos');
+  if(elMExt)elMExt.textContent=compExternos||'—';
+
+  var elMC=document.getElementById('ansop-mini-capac');
+  if(elMC)elMC.textContent=compCapac||'—';
+
+  var elMW=document.getElementById('ansop-mini-whatsapp');
+  if(elMW)elMW.textContent=compWA||'—';
+
+  var elMN=document.getElementById('ansop-mini-nmdp');
+  if(elMN)elMN.textContent=compNM||'—';
+
   var elME=document.getElementById('ansop-mini-equipos'),elMES=document.getElementById('ansop-mini-equipos-sub');
-  var mesesEqDisponibles=[].concat(revisionEquiposRaw.map(function(r){return MESES_ORD[r.fecha.getMonth()];}));
-  mesesEqDisponibles=mesesEqDisponibles.filter(function(m,i){return mesesEqDisponibles.indexOf(m)===i;}).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);});
-  var mesRefEq=mes||mesesEqDisponibles[mesesEqDisponibles.length-1];
-  var filasSoloMesEq=revisionEquiposRaw.filter(function(r){return MESES_ORD[r.fecha.getMonth()]===mesRefEq;});
-  var totalMesEq=filasSoloMesEq.reduce(function(s,r){return s+r.rev;},0);
-  var incMesEq=filasSoloMesEq.reduce(function(s,r){return s+r.incidencias;},0);
-  if(elME)elME.textContent=filasSoloMesEq.length?totalMesEq:'—';
-  if(elMES)elMES.textContent=filasSoloMesEq.length?(incMesEq+' incidencias'):'— incidencias';
-  buildNcChart({containerId:'ansop-tendencia-incidencias',title:'⚠️ Incidencias de Equipos por Mes',data:(function(){var pm={};revisionEquiposRaw.forEach(function(r){var k=MESES_ORD[r.fecha.getMonth()];if(!pm[k])pm[k]=0;pm[k]+=r.incidencias;});return Object.keys(pm).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);}).map(function(m){return{label:m.charAt(0)+m.slice(1,3).toLowerCase(),primary:pm[m],pct:null,_mes:m};});})(),labelP:'Incidencias',singleBar:true,activeMes:mes});
+  var incAgregado=0;
+  mesesCarga.forEach(function(m){
+    incAgregado+=revisionEquiposRaw.filter(function(r){return MESES_ORD[r.fecha.getMonth()]===m;}).reduce(function(s,r){return s+r.incidencias;},0);
+  });
+  if(elME)elME.textContent=compEq||'—';
+  if(elMES)elMES.textContent=(compEq>0||incAgregado>0)?(incAgregado+' incidencias'):'— incidencias';
 
-  var pendientesEq=listaEq.filter(function(g){return g.pct<100;}).sort(function(a,b){return a.pct-b.pct;});
-  var bodyPend=document.getElementById('ansop-pendientes-equipos-body');
-  if(bodyPend){
-    if(!pendientesEq.length)bodyPend.innerHTML='<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:28px">✅ Todos los clientes finalizados en este período</td></tr>';
-    else bodyPend.innerHTML=pendientesEq.map(function(g){
-      return'<tr><td class="agent-name">'+(g.cuenta||'—')+'</td><td>'+(g.plataforma||'—')+'</td><td>'+g.pct.toFixed(1)+'%<div class="score-bar"><div class="score-fill" style="width:'+g.pct+'%"></div></div></td><td>'+(g.incidencias>0?'<span style="color:#dc2626;font-weight:700">'+g.incidencias+'</span>':'0')+'</td></tr>';
-    }).join('');
-  }
+  var elMCa=document.getElementById('ansop-mini-cancel');
+  if(elMCa)elMCa.textContent=compCanc||'—';
 
-  // ── COMPARATIVO POR AGENTE (Tickets) ──
+  // ── Gráficas de tendencia por fuente (histórico completo) ──
+  buildNcChart({containerId:'ansop-tendencia-whatsapp',title:'📱 WhatsApp Pertenece a CM por Mes',data:Object.keys(porMesWA).sort(function(a,b){return MESES_ORD.indexOf(a)-MESES_ORD.indexOf(b);}).map(function(m){return{label:m.charAt(0)+m.slice(1,3).toLowerCase(),primary:porMesWA[m],pct:null,_mes:m};}),labelP:'Solicitudes',singleBar:true,activeMes:mes});
+  buildNcChart({containerId:'ansop-tendencia-nmdp',title:'🗂️ Seguimiento NMDP por Mes',data:mesesNM.map(function(m){return{label:m.mes.charAt(0)+m.mes.slice(1,3).toLowerCase(),primary:m.total,pct:null,_mes:m.mes};}),labelP:'Total',singleBar:true,activeMes:mes});
+  buildNcChart({containerId:'ansop-tendencia-cancelaciones',title:'❌ Cancelaciones por Mes',data:mesesCA.map(function(m){return{label:m.mes.charAt(0)+m.mes.slice(1,3).toLowerCase(),primary:m.total,pct:null,_mes:m.mes};}),labelP:'Cancelaciones',singleBar:true,activeMes:mes});
+
+  // ── COMPARATIVO POR AGENTE (sin cambios) ──
   var agentesFuente=mes?((zohoCacheGet(mes)||{}).agentes||[]):mergeZohoAgentesAllMeses();
   var totalGlobal=agentesFuente.reduce(function(s,a){return s+(parseFloat(a.tickets)||0);},0);
   var filaOrdenadas=agentesFuente.slice().sort(function(a,b){return(b.tickets||0)-(a.tickets||0);});
@@ -3296,35 +3292,7 @@ function renderAnalisisSoporte(mes){
     }).join('');
   }
 
-  // ── CARGA OPERATIVA DIARIA (tickets internos+externos, WhatsApp, equipos revisados, cancelaciones) ──
-  var byMesExternos={};
-  monitoreoData.forEach(function(r){if(!byMesExternos[r.mes])byMesExternos[r.mes]=0;byMesExternos[r.mes]+=r.enviados;});
-  var byMesEquiposRev={};
-  revisionEquiposRaw.forEach(function(r){var k=MESES_ORD[r.fecha.getMonth()];if(!byMesEquiposRev[k])byMesEquiposRev[k]=0;byMesEquiposRev[k]+=r.rev;});
-  var anioRef=new Date().getFullYear();
-  function diasEnMes(m){var idx=MESES_ORD.indexOf(m);return idx>=0?new Date(anioRef,idx+1,0).getDate():30;}
-
-  var mesesCarga=mes?[mes]:mesesConCache.slice();
-  // Si no hay meses de tickets pero sí de otras fuentes, incluirlos también
-  if(!mes){
-    [Object.keys(porMesWA),mesesNM.map(function(x){return x.mes;}),mesesCA.map(function(x){return x.mes;}),Object.keys(byMesEquiposRev),srvData.map(function(x){return x.mes;})].forEach(function(arr){
-      arr.forEach(function(m){if(mesesCarga.indexOf(m)===-1)mesesCarga.push(m);});
-    });
-  }
-  var sumaTotalCarga=0,sumaDiasCarga=0;
-  var compInternos=0,compExternos=0,compWA=0,compEq=0,compCanc=0,compCapac=0,compNM=0;
-  mesesCarga.forEach(function(m){
-    var ti=(porMesTickets.find(function(x){return x.mes===m;})||{}).tickets||0;
-    var te=byMesExternos[m]||0;
-    var wa=porMesWA[m]||0;
-    var eq=byMesEquiposRev[m]||0;
-    var ca=(cancelacionesData.find(function(x){return x.mes===m;})||{}).total||0;
-    var cp=(srvData.find(function(x){return x.mes===m;})||{}).total||0;
-    var nm=(nmdpSoporteData.find(function(x){return x.mes===m;})||{}).total||0;
-    compInternos+=ti;compExternos+=te;compWA+=wa;compEq+=eq;compCanc+=ca;compCapac+=cp;compNM+=nm;
-    sumaTotalCarga+=(ti+te+wa+eq+ca+cp+nm);
-    sumaDiasCarga+=diasEnMes(m);
-  });
+  // ── 3. CARGA OPERATIVA DIARIA — usa los MISMOS acumulados de arriba ──
   var promDia=sumaDiasCarga>0?(sumaTotalCarga/sumaDiasCarga):0;
   var elTotSol=document.getElementById('ansop-total-solicitudes');
   if(elTotSol)elTotSol.textContent=sumaTotalCarga>0?sumaTotalCarga:'—';
@@ -3351,31 +3319,7 @@ function renderAnalisisSoporte(mes){
         }).join('');
     }
   }
-
-  // ── RESUMEN EJECUTIVO (texto sintetizando las 6 áreas) ──
-  var resumenEl=document.getElementById('ansop-resumen');
-  if(!resumenEl)return;
-  var partes=[];
-  var periodoTxt=mes?toTitleCase(mes):'el período disponible';
-  if(ultimoTickets){
-    var prevIdxT=MESES_ORD.indexOf(ultimoTickets.mes)-1;
-    var prevT=prevIdxT>=0?porMesTickets.find(function(d){return d.mes===MESES_ORD[prevIdxT];}):null;
-    var tendTxt=prevT?(ultimoTickets.tickets>prevT.tickets?' (▲ '+(ultimoTickets.tickets-prevT.tickets)+' vs. mes anterior)':ultimoTickets.tickets<prevT.tickets?' (▼ '+(prevT.tickets-ultimoTickets.tickets)+' vs. mes anterior)':' (sin cambio vs. mes anterior)'):'';
-    partes.push('En <b>'+toTitleCase(ultimoTickets.mes)+'</b> se registraron <b>'+ultimoTickets.tickets+'</b> tickets internos'+tendTxt+(ultimoTickets.frt!==null?', con un tiempo promedio de respuesta de <b>'+Math.round(ultimoTickets.frt)+' min</b>':'')+'.');
-  }else{
-    partes.push('Aún no hay suficiente información en caché de Zoho para analizar tickets.');
-  }
-  if(capacRow)partes.push('La satisfacción en capacitaciones fue de <b>'+capacRow.calif.toFixed(1)+'%</b>.');
-  var refWA2=mes||mesesWA[mesesWA.length-1];
-  if(refWA2&&porMesWA[refWA2]!==undefined)partes.push('Se registraron <b>'+porMesWA[refWA2]+'</b> solicitudes de WhatsApp pertenecientes a CM.');
-  if(filaNM)partes.push('El conteo de seguimiento NMDP reportó <b>'+filaNM.total+'</b> en el período.');
-  if(listaEq.length){
-    var clientesPend=pendientesEq.length;
-    partes.push('La revisión de equipos tiene un avance acumulado de <b>'+pctGlobalEq.toFixed(1)+'%</b>, con <b>'+incGlobalEq+'</b> incidencias encontradas'+(clientesPend>0?' y <b>'+clientesPend+'</b> cliente'+(clientesPend===1?'':'s')+' aún en proceso.':' — todos los clientes finalizados.'));
-  }
-  if(filaCA)partes.push('Se registraron <b>'+filaCA.total+'</b> cancelaciones en el período.');
-  resumenEl.innerHTML=partes.join(' ');
-}
+} 
 
 function exportPDF(){
   var mesesFiltro=getMesesCuatri(activeCuatri);

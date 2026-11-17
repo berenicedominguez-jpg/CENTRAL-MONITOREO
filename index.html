@@ -889,6 +889,7 @@
           <span class="fin-kpi-icon">🗂️</span>
           <div class="fin-kpi-label">Total</div>
           <div class="fin-kpi-val" style="color:#2563a8" id="nmdp-exp-recup-total">—</div>
+          <div style="font-size:.68rem;color:#94a3b8;margin-top:2px" id="nmdp-exp-recup-corte"></div>
           <div style="display:flex;gap:20px;justify-content:center;margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0">
             <div style="flex:1">
               <div style="font-size:.68rem;color:#16a34a;font-weight:700;letter-spacing:.5px">🌐 ONLINE</div>
@@ -904,6 +905,14 @@
               <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-recup-offline-pct">— del total</div>
               <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
                 <div id="nmdp-exp-recup-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;color:#7c3aed;font-weight:700;letter-spacing:.5px">💼 PORTÁTIL</div>
+              <div style="font-size:1.3rem;font-weight:700;color:#7c3aed" id="nmdp-exp-recup-portatil">—</div>
+              <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-recup-portatil-pct">— del total</div>
+              <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
+                <div id="nmdp-exp-recup-portatil-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#c4b5fd);width:0%;transition:width 1s ease"></div>
               </div>
             </div>
           </div>
@@ -929,6 +938,14 @@
                 <div id="nmdp-exp-offline-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#ef4444,#fca5a5);width:0%;transition:width 1s ease"></div>
               </div>
             </div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;color:#7c3aed;font-weight:700;letter-spacing:.5px">💼 PORTÁTIL</div>
+              <div style="font-size:1.3rem;font-weight:700;color:#7c3aed" id="nmdp-exp-portatil">—</div>
+              <div style="font-size:.68rem;color:#94a3b8" id="nmdp-exp-portatil-pct">— del total</div>
+              <div style="margin-top:6px;background:#e8eef5;border-radius:99px;height:5px;overflow:hidden">
+                <div id="nmdp-exp-portatil-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#c4b5fd);width:0%;transition:width 1s ease"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -951,9 +968,9 @@
           <span class="fin-table-badge" id="nmdp-rez-total-badge">Total: —</span>
         </div>
         <table class="fin-estado">
-          <thead><tr><th>Mes</th><th style="text-align:right">Rezagados</th><th style="text-align:right">🌐 Online</th><th style="text-align:right">📴 Offline</th><th style="text-align:right">% del total</th></tr></thead>
+          <thead><tr><th>Mes</th><th style="text-align:right">Rezagados</th><th style="text-align:right">🌐 Online</th><th style="text-align:right">📴 Offline</th><th style="text-align:right">💼 Portátil</th><th style="text-align:right">% del total</th></tr></thead>
           <tbody id="nmdp-rez-tbody">
-            <tr><td colspan="5" class="fin-empty">⏳ Cargando...</td></tr>
+            <tr><td colspan="6" class="fin-empty">⏳ Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1013,7 +1030,7 @@
           <span class="fin-chart-title">🗂️ Historial Completo por Mes</span>
         </div>
         <div style="overflow:auto">
-          <table class="fin-estado" style="min-width:700px">
+          <table class="fin-estado" style="min-width:860px">
             <thead>
               <tr>
                 <th>Mes</th>
@@ -1021,13 +1038,15 @@
                 <th style="text-align:right">Monto Recuperado</th>
                 <th style="text-align:center">Tk No Recuperados</th>
                 <th style="text-align:right">Monto No Rec.</th>
+                <th style="text-align:center">Tk Cancelados</th>
+                <th style="text-align:right">Monto Cancelados</th>
                 <th style="text-align:right">Viáticos</th>
                 <th style="text-align:right">Total Recuperaciones</th>
                 <th style="text-align:right">Total + Viáticos</th>
               </tr>
             </thead>
             <tbody id="nmdp-hist-tbody">
-              <tr><td colspan="8" class="fin-empty">⏳ Cargando...</td></tr>
+              <tr><td colspan="10" class="fin-empty">⏳ Cargando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1242,6 +1261,8 @@ var CHART_H=200;
 var now=new Date();
 var recData=[],srvData=[],robosData=[],zohoAgentes=[],pendientesData=[],nmdpData=[],expedientesData={},rezagadosData=[],monitoreoData=[],capacitacionesData=[];
 var expedientesRecuperadorData={nombres:[],metrics:{}};
+var expedientesRecuperadorHist={}; // {'OCTUBRE 2026':{nombres:[],metrics:{}}}
+var expedientesRecuperadorMeses=[]; // meses ordenados cronológicamente
 var solicitudesData=[],conectividadData={},whatsappCMData=[];
 var frtFallbackMap={},frtFallbackGlobal=0;
 var zohoHistorial={},zohoHistorialTotal={},conectividadHistorial={};
@@ -1574,9 +1595,11 @@ async function loadAll(){
     }
     // Parsear NMDP + Expedientes (misma hoja)
     if(j5&&!j5.error){
-      expedientesData={total:0,online:0,offline:0};
+      expedientesData={total:0,online:0,offline:0,portatil:0};
       rezagadosData=[];
       expedientesRecuperadorData={nombres:[],metrics:{}};
+      expedientesRecuperadorHist={};expedientesRecuperadorMeses=[];
+      var ultimoMesRecup=''; // arrastra el MES_RECUP hacia abajo si las filas siguientes lo dejan vacío
       nmdpData=(j5.rows||[]).map(function(r){
         var keys=Object.keys(r);
         var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
@@ -1584,6 +1607,8 @@ async function loadAll(){
         var kRecMonto=keys.find(function(k){return k.toLowerCase().indexOf('tk_recuperados_monto')!==-1||k.toLowerCase().indexOf('recuperados_monto')!==-1;});
         var kNoRecQty=keys.find(function(k){return k.toLowerCase().indexOf('tk_no_recuperados_qty')!==-1||k.toLowerCase().indexOf('no_recuperados_qty')!==-1;});
         var kNoRecMonto=keys.find(function(k){return k.toLowerCase().indexOf('tk_no_recuperados_monto')!==-1||k.toLowerCase().indexOf('no_recuperados_monto')!==-1;});
+        var kCancQty=keys.find(function(k){return k.toLowerCase().trim()==='tk_cancelados';});
+        var kCancMonto=keys.find(function(k){return k.toLowerCase().trim()==='tk_cancelados_monto';});
         var kViat=keys.find(function(k){return k.toLowerCase().indexOf('viaticos')!==-1||k.toLowerCase().indexOf('viáticos')!==-1;});
         var kTotalRec=keys.find(function(k){return k.toLowerCase().indexOf('total_recuperaciones')!==-1;});
         var kTotalCon=keys.find(function(k){return k.toLowerCase().indexOf('total_con_viaticos')!==-1;});
@@ -1591,11 +1616,16 @@ async function loadAll(){
         var kTotal=keys.find(function(k){return k.toLowerCase().trim()==='total';});
         var kOnline=keys.find(function(k){return k.toLowerCase().trim()==='online';});
         var kOffline=keys.find(function(k){return k.toLowerCase().trim()==='offline';});
+        var kPortatil=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='portatil'||kl==='portátil';});
         var kRezMes=keys.find(function(k){return k.toLowerCase().trim()==='rezagados';});
         var kRezVal=keys.find(function(k){return k.toLowerCase().trim()==='total_rezagados';});
-        var kRezOnline=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='online_rezagados'||kl==='rez_online'||kl==='rezagados_online'||kl==='online rezagados';});
-        var kRezOffline=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='offline_rezagados'||kl==='rez_offline'||kl==='rezagados_offline'||kl==='offline rezagados';});
+        var kRezOnline=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='onlinerez'||kl==='online_rez'||kl==='online_rezagados'||kl==='rez_online'||kl==='rezagados_online'||kl==='online rezagados';});
+        var kRezOffline=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='offlinerez'||kl==='offline_rez'||kl==='offline_rezagados'||kl==='rez_offline'||kl==='rezagados_offline'||kl==='offline rezagados';});
+        var kRezPortatil=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='portatilrez'||kl==='portátilrez'||kl==='portatil_rez'||kl==='portatil_rezagados'||kl==='rez_portatil'||kl==='rezagados_portatil';});
         // fallback: columnas por posición N (13) y O (14) si no se encontraron por nombre
+        var iRezVal=kRezVal?keys.indexOf(kRezVal):-1;
+        if(!kRezOnline&&iRezVal!==-1&&keys.length>iRezVal+1)kRezOnline=keys[iRezVal+1];
+        if(!kRezOffline&&iRezVal!==-1&&keys.length>iRezVal+2)kRezOffline=keys[iRezVal+2];
         if(!kRezOnline&&keys.length>13)kRezOnline=keys[13];
         if(!kRezOffline&&keys.length>14)kRezOffline=keys[14];
         var mes=kMes?String(r[kMes]||'').trim():'';
@@ -1605,23 +1635,30 @@ async function loadAll(){
             label:String(r[kRezMes]).trim(),
             valor:parseFloat(r[kRezVal]||0)||0,
             online:parseFloat(r[kRezOnline]||0)||0,
-            offline:parseFloat(r[kRezOffline]||0)||0
+            offline:parseFloat(r[kRezOffline]||0)||0,
+            portatil:kRezPortatil?(parseFloat(r[kRezPortatil]||0)||0):0
           });
         }
         // Parsear tabla "Expedientes por Recuperador" (columnas dinámicas, auto-detecta nuevos recuperadores)
         var kRecuperador=keys.find(function(k){return k.toLowerCase().trim()==='recuperador';});
+        var kMesRecup=keys.find(function(k){var kl=k.toLowerCase().trim();return kl==='mes_recup'||kl==='mes recup'||kl==='mesrecup';});
         if(kRecuperador&&r[kRecuperador]&&String(r[kRecuperador]).trim()){
           var etiquetaRec=String(r[kRecuperador]).trim().toUpperCase();
-          var colsConocidas=[kRecuperador,kMes,kRecQty,kRecMonto,kNoRecQty,kNoRecMonto,kViat,kTotalRec,kTotalCon,kNotas,kTotal,kOnline,kOffline,kRezMes,kRezVal,kRezOnline,kRezOffline];
+          var mesRecup=kMesRecup?String(r[kMesRecup]||'').toUpperCase().trim().replace(/\s+/g,' '):'';
+          if(mesRecup)ultimoMesRecup=mesRecup;else mesRecup=ultimoMesRecup;
+          var bucketRec=mesRecup||'ACTUAL';
+          if(!expedientesRecuperadorHist[bucketRec]){expedientesRecuperadorHist[bucketRec]={nombres:[],metrics:{}};expedientesRecuperadorMeses.push(bucketRec);}
+          var destRec=expedientesRecuperadorHist[bucketRec];
+          var colsConocidas=[kRecuperador,kMesRecup,kMes,kRecQty,kRecMonto,kNoRecQty,kNoRecMonto,kCancQty,kCancMonto,kViat,kTotalRec,kTotalCon,kNotas,kTotal,kOnline,kOffline,kPortatil,kRezMes,kRezVal,kRezOnline,kRezOffline,kRezPortatil];
           keys.forEach(function(k){
             if(colsConocidas.indexOf(k)!==-1)return;
             var nombreRec=String(k).trim();
             if(!nombreRec)return;
             var valRec=r[k];
             if(valRec===undefined||valRec===null||String(valRec).trim()==='')return;
-            if(expedientesRecuperadorData.nombres.indexOf(nombreRec)===-1)expedientesRecuperadorData.nombres.push(nombreRec);
-            if(!expedientesRecuperadorData.metrics[etiquetaRec])expedientesRecuperadorData.metrics[etiquetaRec]={};
-            expedientesRecuperadorData.metrics[etiquetaRec][nombreRec]=parseFloat(String(valRec).replace(/[$,]/g,''))||0;
+            if(destRec.nombres.indexOf(nombreRec)===-1)destRec.nombres.push(nombreRec);
+            if(!destRec.metrics[etiquetaRec])destRec.metrics[etiquetaRec]={};
+            destRec.metrics[etiquetaRec][nombreRec]=parseFloat(String(valRec).replace(/[$,]/g,''))||0;
           });
         }
         if(!mes)return null;
@@ -1629,12 +1666,15 @@ async function loadAll(){
         expedientesData.total+=parseFloat(r[kTotal]||0)||0;
         expedientesData.online+=parseFloat(r[kOnline]||0)||0;
         expedientesData.offline+=parseFloat(r[kOffline]||0)||0;
+        expedientesData.portatil+=kPortatil?(parseFloat(r[kPortatil]||0)||0):0;
         return{
           mes:mes,
           recQty:parseFloat(r[kRecQty]||0)||0,
           recMonto:parseFloat(String(r[kRecMonto]||'0').replace(/[$,]/g,''))||0,
           noRecQty:parseFloat(r[kNoRecQty]||0)||0,
           noRecMonto:parseFloat(String(r[kNoRecMonto]||'0').replace(/[$,]/g,''))||0,
+          cancQty:kCancQty?(parseFloat(r[kCancQty]||0)||0):0,
+          cancMonto:kCancMonto?(parseFloat(String(r[kCancMonto]||'0').replace(/[$,]/g,''))||0):0,
           viaticos:parseFloat(String(r[kViat]||'0').replace(/[$,]/g,''))||0,
           totalRec:parseFloat(String(r[kTotalRec]||'0').replace(/[$,]/g,''))||0,
           totalCon:parseFloat(String(r[kTotalCon]||'0').replace(/[$,]/g,''))||0,
@@ -1642,9 +1682,12 @@ async function loadAll(){
           expTotal:parseFloat(r[kTotal]||0)||0,
           expOnline:parseFloat(r[kOnline]||0)||0,
           expOffline:parseFloat(r[kOffline]||0)||0,
+          expPortatil:kPortatil?(parseFloat(r[kPortatil]||0)||0):0,
           mesOrden:MESES_ORD.indexOf(mes.toUpperCase().trim())
         };
       }).filter(Boolean).sort(function(a,b){return a.mesOrden-b.mesOrden;});
+      // Histórico Expedientes por Recuperador: ordenar y poblar selector
+      expedientesRecuperadorMeses.sort(function(a,b){return ordenMesRecup(a)-ordenMesRecup(b);});
       // Poblar selector NMDP
       var selNmdp=document.getElementById('msel-nmdp');
       if(selNmdp){
@@ -3439,16 +3482,17 @@ function fmt$(n){if(n==null||isNaN(n))return'—';return'$'+Number(n).toLocaleSt
 function fmtPct(a,b){if(!b)return'—';return((a/b)*100).toFixed(2)+'%';}
 
 function renderExpedientes(){
+  seleccionarRecupHist();
   var sel=document.getElementById('msel-nmdp');
   var filtroMes=sel?sel.value:'';
   var d;
   if(filtroMes){
     var row=nmdpData.find(function(r){return r.mes===filtroMes;});
-    d=row?{total:row.expTotal,online:row.expOnline,offline:row.expOffline}:{total:0,online:0,offline:0};
+    d=row?{total:row.expTotal,online:row.expOnline,offline:row.expOffline,portatil:row.expPortatil}:{total:0,online:0,offline:0,portatil:0};
   } else {
     d=expedientesData;
   }
-  var total=d.total||0,online=d.online||0,offline=d.offline||0;
+  var total=d.total||0,online=d.online||0,offline=d.offline||0,portatil=d.portatil||0;
   var elT=document.getElementById('nmdp-exp-total');
   var elOn=document.getElementById('nmdp-exp-online');
   var elOff=document.getElementById('nmdp-exp-offline');
@@ -3456,14 +3500,20 @@ function renderExpedientes(){
   var elOffP=document.getElementById('nmdp-exp-offline-pct');
   var elOnBar=document.getElementById('nmdp-exp-online-bar');
   var elOffBar=document.getElementById('nmdp-exp-offline-bar');
+  var elPort=document.getElementById('nmdp-exp-portatil');
+  var elPortP=document.getElementById('nmdp-exp-portatil-pct');
+  var elPortBar=document.getElementById('nmdp-exp-portatil-bar');
   if(elT)elT.textContent=total||'—';
   if(elOn)elOn.textContent=online||'—';
   if(elOff)elOff.textContent=offline||'—';
   if(elOnP)elOnP.textContent=total>0?(((online/total)*100).toFixed(2)+'% del total'):'— del total';
   if(elOffP)elOffP.textContent=total>0?(((offline/total)*100).toFixed(2)+'% del total'):'— del total';
+  if(elPort)elPort.textContent=portatil||'—';
+  if(elPortP)elPortP.textContent=total>0?(((portatil/total)*100).toFixed(2)+'% del total'):'— del total';
   setTimeout(function(){
     if(elOnBar)elOnBar.style.width=total>0?((online/total)*100)+'%':'0%';
     if(elOffBar)elOffBar.style.width=total>0?((offline/total)*100)+'%':'0%';
+    if(elPortBar)elPortBar.style.width=total>0?((portatil/total)*100)+'%':'0%';
   },100);
   // Tabla expedientes por recuperador (siempre muestra el snapshot actual, no depende del filtro de mes)
   renderExpedientesRecuperador();
@@ -3478,13 +3528,21 @@ function renderExpedientes(){
   if(elRecupTotal){
     var mOn=expedientesRecuperadorData.metrics['ONLINE']||{};
     var mOff=expedientesRecuperadorData.metrics['OFFLINE']||{};
-    var sumOn=0,sumOff=0;
+    var mPort=expedientesRecuperadorData.metrics['PORTATIL']||expedientesRecuperadorData.metrics['PORTÁTIL']||{};
+    var sumOn=0,sumOff=0,sumPort=0;
     (expedientesRecuperadorData.nombres||[]).forEach(function(n){
       sumOn+=parseFloat(mOn[n])||0;
       sumOff+=parseFloat(mOff[n])||0;
+      sumPort+=parseFloat(mPort[n])||0;
     });
     var hayRecup=(expedientesRecuperadorData.nombres||[]).length>0;
-    var totalRecup=sumOn+sumOff;
+    var totalRecup=sumOn+sumOff+sumPort;
+    var elRecupPort=document.getElementById('nmdp-exp-recup-portatil');
+    var elRecupPortP=document.getElementById('nmdp-exp-recup-portatil-pct');
+    var elRecupPortBar=document.getElementById('nmdp-exp-recup-portatil-bar');
+    if(elRecupPort)elRecupPort.textContent=hayRecup?sumPort:'—';
+    if(elRecupPortP)elRecupPortP.textContent=totalRecup>0?(((sumPort/totalRecup)*100).toFixed(2)+'% del total'):'— del total';
+    setTimeout(function(){if(elRecupPortBar)elRecupPortBar.style.width=totalRecup>0?((sumPort/totalRecup)*100)+'%':'0%';},100);
     elRecupTotal.textContent=hayRecup?totalRecup:'—';
     if(elRecupOnline)elRecupOnline.textContent=hayRecup?sumOn:'—';
     if(elRecupOffline)elRecupOffline.textContent=hayRecup?sumOff:'—';
@@ -3500,31 +3558,60 @@ function renderExpedientes(){
   var badge=document.getElementById('nmdp-rez-total-badge');
   if(!tbody)return;
   if(!rezagadosData.length){
-    tbody.innerHTML='<tr><td colspan="5" class="fin-empty">Sin datos de rezagados en el Sheet</td></tr>';
+    tbody.innerHTML='<tr><td colspan="6" class="fin-empty">Sin datos de rezagados en el Sheet</td></tr>';
     return;
   }
   var totalRez=rezagadosData.reduce(function(s,r){return s+r.valor;},0);
   if(badge)badge.textContent='Total: '+totalRez;
   var totalOnline=rezagadosData.reduce(function(s,r){return s+(r.online||0);},0);
   var totalOffline=rezagadosData.reduce(function(s,r){return s+(r.offline||0);},0);
+  var totalPortatil=rezagadosData.reduce(function(s,r){return s+(r.portatil||0);},0);
   tbody.innerHTML=rezagadosData.map(function(r){
     var pct=totalRez>0?((r.valor/totalRez)*100).toFixed(2)+'%':'—';
     var onlineVal=(r.online||0)>0?r.online:'—';
     var offlineVal=(r.offline||0)>0?r.offline:'—';
+    var portatilVal=(r.portatil||0)>0?r.portatil:'—';
     return '<tr><td>'+r.label+'</td>'
       +'<td style="text-align:right;font-weight:500;color:#d97706">'+r.valor+'</td>'
       +'<td style="text-align:right;font-weight:500;color:#16a34a">'+onlineVal+'</td>'
       +'<td style="text-align:right;font-weight:500;color:#ef4444">'+offlineVal+'</td>'
+      +'<td style="text-align:right;font-weight:500;color:#7c3aed">'+portatilVal+'</td>'
       +'<td style="text-align:right;color:#888">'+pct+'</td></tr>';
   }).join('')+'<tr style="border-top:1.5px solid #e2e8f0;font-weight:600"><td>Total acumulado</td>'
     +'<td style="text-align:right;color:#d97706">'+totalRez+'</td>'
     +'<td style="text-align:right;color:#16a34a">'+totalOnline+'</td>'
     +'<td style="text-align:right;color:#ef4444">'+totalOffline+'</td>'
+    +'<td style="text-align:right;color:#7c3aed">'+totalPortatil+'</td>'
     +'<td style="text-align:right">100%</td></tr>';
 }
 
-var ORDEN_METRICAS_RECUP=['ONLINE','OFFLINE','RECUPERADAS','NO RECUPERADAS','PENDIENTES POR ENTREGAR'];
-var COLOR_METRICAS_RECUP={'ONLINE':'#2563a8','OFFLINE':'#64748b','RECUPERADAS':'#16a34a','NO RECUPERADAS':'#ef4444','PENDIENTES POR ENTREGAR':'#0f172a'};
+// "OCTUBRE 2026" -> 2026*100+10 ; sin año usa 0 ; "ACTUAL" va al final
+function ordenMesRecup(m){
+  if(m==='ACTUAL')return 99999999;
+  var partes=String(m).split(' ');var mi=MESES_ORD.indexOf(partes[0]);var y=parseInt(partes[1],10)||0;
+  return y*100+(mi===-1?99:mi);
+}
+// El corte de Expedientes por Recuperador sigue al filtro de mes de NMDP (msel-nmdp).
+// Mes elegido -> corte de ese mes (si hay varios años, el más reciente). Todos -> corte más reciente.
+function seleccionarRecupHist(){
+  var sel=document.getElementById('msel-nmdp');
+  var filtroMes=sel&&sel.value?String(sel.value).toUpperCase().trim():'';
+  var m='';
+  if(!filtroMes){
+    m=expedientesRecuperadorMeses[expedientesRecuperadorMeses.length-1]||'';
+  } else {
+    var nombreMes=filtroMes.split(' ')[0];
+    var conAnio=filtroMes.indexOf(' ')!==-1;
+    var cand=expedientesRecuperadorMeses.filter(function(x){return conAnio?x===filtroMes:x.split(' ')[0]===nombreMes;});
+    if(cand.length)m=cand[cand.length-1];
+    else if(expedientesRecuperadorMeses.length===1&&expedientesRecuperadorMeses[0]==='ACTUAL')m='ACTUAL'; // hoja aún sin MES_RECUP
+  }
+  expedientesRecuperadorData=(m&&expedientesRecuperadorHist[m])||{nombres:[],metrics:{}};
+  var lbl=document.getElementById('nmdp-exp-recup-corte');
+  if(lbl)lbl.textContent=m?('Corte: '+(m==='ACTUAL'?'Actual':toTitleCase(m))):(filtroMes?('Sin corte para '+toTitleCase(filtroMes)):'');
+}
+var ORDEN_METRICAS_RECUP=['ONLINE','OFFLINE','PORTATIL','RECUPERADAS','NO RECUPERADAS','PENDIENTES POR ENTREGAR'];
+var COLOR_METRICAS_RECUP={'ONLINE':'#2563a8','OFFLINE':'#64748b','PORTATIL':'#7c3aed','RECUPERADAS':'#16a34a','NO RECUPERADAS':'#ef4444','PENDIENTES POR ENTREGAR':'#0f172a'};
 function capitalizarEtiqueta(s){return s.charAt(0)+s.slice(1).toLowerCase();}
 function capitalizarNombre(s){return String(s).trim().toUpperCase();}
 function renderExpedientesRecuperador(){
@@ -3570,7 +3657,7 @@ function renderNMDP(){
   var badge=document.getElementById('nmdp-period-badge');
   if(badge)badge.textContent=filtroMes?(filtroMes.charAt(0)+filtroMes.slice(1).toLowerCase()):'Todos los meses';
 
-  // Siempre renderizar expedientes (no dependen del filtro de mes)
+  // Expedientes: Entregados en el Mes y Expedientes por Recuperador siguen el filtro de mes
   renderExpedientes();
 
   if(!data.length){
@@ -3578,7 +3665,7 @@ function renderNMDP(){
     var eb=document.getElementById('nmdp-estado-body');
     if(eb)eb.innerHTML='<tr><td colspan="3" class="fin-empty">Sin datos para este período. Verifica que la hoja <b>NMDP</b> exista en tu Google Sheets con la estructura correcta.</td></tr>';
     var hb=document.getElementById('nmdp-hist-tbody');
-    if(hb)hb.innerHTML='<tr><td colspan="8" class="fin-empty">Sin datos</td></tr>';
+    if(hb)hb.innerHTML='<tr><td colspan="10" class="fin-empty">Sin datos</td></tr>';
     return;
   }
 
@@ -3587,9 +3674,11 @@ function renderNMDP(){
   var totRecMonto = data.reduce(function(s,d){return s+d.recMonto;},0);
   var totNoRecQty = data.reduce(function(s,d){return s+d.noRecQty;},0);
   var totNoRecMonto=data.reduce(function(s,d){return s+d.noRecMonto;},0);
+  var totCancQty  = data.reduce(function(s,d){return s+d.cancQty;},0);
+  var totCancMonto= data.reduce(function(s,d){return s+d.cancMonto;},0);
   var totViat     = data.reduce(function(s,d){return s+d.viaticos;},0);
-  var totRec      = data.reduce(function(s,d){return s+(d.totalRec||(d.recMonto+d.noRecMonto));},0);
-  var totCon      = data.reduce(function(s,d){return s+(d.totalCon||(d.recMonto+d.noRecMonto+d.viaticos));},0);
+  var totRec      = data.reduce(function(s,d){return s+(d.totalRec||(d.recMonto+d.noRecMonto+d.cancMonto));},0);
+  var totCon      = data.reduce(function(s,d){return s+(d.totalCon||(d.recMonto+d.noRecMonto+d.cancMonto+d.viaticos));},0);
 
   // — KPIs —
   var el;
@@ -3611,7 +3700,8 @@ function renderNMDP(){
     rows+='<tr class="fin-row-section"><td colspan="3">Ingresos por Facturación</td></tr>';
     rows+='<tr><td style="padding-left:28px">🎫 Tickets Recuperados para Facturar</td><td style="text-align:center">'+totRecQty+'</td><td>'+fmt$(totRecMonto)+'</td></tr>';
     rows+='<tr><td style="padding-left:28px">📋 Tickets No Recuperados para Facturar</td><td style="text-align:center">'+totNoRecQty+'</td><td>'+fmt$(totNoRecMonto)+'</td></tr>';
-    rows+='<tr class="fin-row-subtotal"><td><b>Subtotal Facturación</b></td><td style="text-align:center"><b>'+(totRecQty+totNoRecQty)+'</b></td><td>'+fmt$(totRecMonto+totNoRecMonto)+'</td></tr>';
+    rows+='<tr><td style="padding-left:28px">🚫 Tickets Cancelados para Facturar</td><td style="text-align:center">'+totCancQty+'</td><td>'+fmt$(totCancMonto)+'</td></tr>';
+    rows+='<tr class="fin-row-subtotal"><td><b>Subtotal Facturación</b></td><td style="text-align:center"><b>'+(totRecQty+totNoRecQty+totCancQty)+'</b></td><td>'+fmt$(totRecMonto+totNoRecMonto+totCancMonto)+'</td></tr>';
     rows+='<tr class="fin-row-section"><td colspan="3">Gastos Operativos</td></tr>';
     rows+='<tr><td style="padding-left:28px">🚗 Viáticos</td><td style="text-align:center">—</td><td>'+fmt$(totViat)+'</td></tr>';
     rows+='<tr class="fin-row-total"><td colspan="2"><b>💰 TOTAL RECUPERACIONES</b></td><td>'+fmt$(totCon)+'</td></tr>';
@@ -3621,12 +3711,12 @@ function renderNMDP(){
   // — Tabla historial completo —
   var hb=document.getElementById('nmdp-hist-tbody');
   if(hb){
-    if(!nmdpData.length){hb.innerHTML='<tr><td colspan="8" class="fin-empty">Sin datos</td></tr>';return;}
+    if(!nmdpData.length){hb.innerHTML='<tr><td colspan="10" class="fin-empty">Sin datos</td></tr>';return;}
     var rows='';
     nmdpData.forEach(function(d,i){
       var mesLabel=d.mes.charAt(0)+d.mes.slice(1).toLowerCase();
-      var totalRecC=d.totalRec||(d.recMonto+d.noRecMonto);
-      var totalConC=d.totalCon||(d.recMonto+d.noRecMonto+d.viaticos);
+      var totalRecC=d.totalRec||(d.recMonto+d.noRecMonto+d.cancMonto);
+      var totalConC=d.totalCon||(d.recMonto+d.noRecMonto+d.cancMonto+d.viaticos);
       var isCurrent=filtroMes&&d.mes===filtroMes;
       rows+='<tr style="'+(isCurrent?'background:#eff6ff':'')+(i%2!==0&&!isCurrent?';background:#fafbfd':'')+'">'
         +'<td><b>'+mesLabel+'</b></td>'
@@ -3634,6 +3724,8 @@ function renderNMDP(){
         +'<td style="text-align:right">'+fmt$(d.recMonto)+'</td>'
         +'<td style="text-align:center">'+d.noRecQty+'</td>'
         +'<td style="text-align:right">'+fmt$(d.noRecMonto)+'</td>'
+        +'<td style="text-align:center">'+d.cancQty+'</td>'
+        +'<td style="text-align:right">'+fmt$(d.cancMonto)+'</td>'
         +'<td style="text-align:right">'+fmt$(d.viaticos)+'</td>'
         +'<td style="text-align:right">'+fmt$(totalRecC)+'</td>'
         +'<td style="text-align:right;color:#7c3aed;font-weight:800">'+fmt$(totalConC)+'</td>'
@@ -3643,15 +3735,19 @@ function renderNMDP(){
     var gRecMonto =nmdpData.reduce(function(s,d){return s+d.recMonto;},0);
     var gNoRecQty =nmdpData.reduce(function(s,d){return s+d.noRecQty;},0);
     var gNoRecMonto=nmdpData.reduce(function(s,d){return s+d.noRecMonto;},0);
+    var gCancQty  =nmdpData.reduce(function(s,d){return s+d.cancQty;},0);
+    var gCancMonto=nmdpData.reduce(function(s,d){return s+d.cancMonto;},0);
     var gViat     =nmdpData.reduce(function(s,d){return s+d.viaticos;},0);
-    var gTotalRec =nmdpData.reduce(function(s,d){return s+(d.totalRec||(d.recMonto+d.noRecMonto));},0);
-    var gTotalCon =nmdpData.reduce(function(s,d){return s+(d.totalCon||(d.recMonto+d.noRecMonto+d.viaticos));},0);
+    var gTotalRec =nmdpData.reduce(function(s,d){return s+(d.totalRec||(d.recMonto+d.noRecMonto+d.cancMonto));},0);
+    var gTotalCon =nmdpData.reduce(function(s,d){return s+(d.totalCon||(d.recMonto+d.noRecMonto+d.cancMonto+d.viaticos));},0);
     rows+='<tr class="fin-row-total">'
       +'<td>TOTAL ACUMULADO</td>'
       +'<td style="text-align:center">'+gRecQty+'</td>'
       +'<td style="text-align:right">'+fmt$(gRecMonto)+'</td>'
       +'<td style="text-align:center">'+gNoRecQty+'</td>'
       +'<td style="text-align:right">'+fmt$(gNoRecMonto)+'</td>'
+      +'<td style="text-align:center">'+gCancQty+'</td>'
+      +'<td style="text-align:right">'+fmt$(gCancMonto)+'</td>'
       +'<td style="text-align:right">'+fmt$(gViat)+'</td>'
       +'<td style="text-align:right">'+fmt$(gTotalRec)+'</td>'
       +'<td style="text-align:right">'+fmt$(gTotalCon)+'</td>'

@@ -1576,10 +1576,11 @@ async function loadAll(){
       var kWhatsapp=keys.find(function(k){return k.toLowerCase().indexOf('slack')!==-1;});
       var kDrive=keys.find(function(k){return k.toLowerCase()==='drive';});
       var kReporte=keys.find(function(k){return k.toLowerCase().indexOf('reporte en cuenta')!==-1;});
-      var kCorreo=keys.find(function(k){return k.toLowerCase().indexOf('correo')!==-1;});
+      var kCorreo=keys.find(function(k){var kl=k.toLowerCase();return kl.indexOf('correo')!==-1&&kl.indexOf('adjunto')===-1;});
+      var kAdjuntos=keys.find(function(k){return k.toLowerCase().indexOf('adjunto')!==-1;});
       var kEvidencia=keys.find(function(k){return k.toLowerCase().indexOf('evidencia')!==-1;});
       var v=String(r['si/no']||'').trim();var ur=String(r['ur']||'').trim();
-      return{mes:String(r['mes']||'').toUpperCase().trim(),tipo:String(r['tipo de evento']||'').trim(),plataforma:String(r['plataforma']||'').toUpperCase().trim(),compania:PLATAFORMA_A_COMPANIA[String(r['plataforma']||'').toUpperCase().trim()]||null,monitorista:String(r['monitorista/especialista']||'').trim(),tiempoReporte:String(r['tiempo de reporte de robo']||'').toUpperCase().trim(),ur:ur,unr:String(r['unr']||'').trim(),recuperado:(v==='1'||v.toLowerCase()==='si'||ur==='✔'||ur==='✓')?'si':'no',ticketZoho:String(r['ticket en zoho']||'').toUpperCase().trim(),comentarios:String(r[kComentario]||'').toUpperCase().trim(),caso:String(r[kCaso]||'').trim(),cliente:String(r[kCliente]||'').trim(),unidad:String(r[kUnidad]||'').trim(),whatsapp:String(r[kWhatsapp]||'').trim(),drive:String(r[kDrive]||'').trim(),reporteCuenta:String(r[kReporte]||'').trim(),correos:String(r[kCorreo]||'').trim(),evidencias:String(r[kEvidencia]||'').trim()};
+      return{mes:String(r['mes']||'').toUpperCase().trim(),tipo:String(r['tipo de evento']||'').trim(),plataforma:String(r['plataforma']||'').toUpperCase().trim(),compania:PLATAFORMA_A_COMPANIA[String(r['plataforma']||'').toUpperCase().trim()]||null,monitorista:String(r['monitorista/especialista']||'').trim(),tiempoReporte:String(r['tiempo de reporte de robo']||'').toUpperCase().trim(),ur:ur,unr:String(r['unr']||'').trim(),recuperado:(v==='1'||v.toLowerCase()==='si'||ur==='✔'||ur==='✓')?'si':'no',ticketZoho:String(r['ticket en zoho']||'').toUpperCase().trim(),comentarios:String(r[kComentario]||'').toUpperCase().trim(),caso:String(r[kCaso]||'').trim(),cliente:String(r[kCliente]||'').trim(),unidad:String(r[kUnidad]||'').trim(),whatsapp:String(r[kWhatsapp]||'').trim(),drive:String(r[kDrive]||'').trim(),reporteCuenta:String(r[kReporte]||'').trim(),correos:String(r[kCorreo]||'').trim(),adjuntosCorreo:String(r[kAdjuntos]||'').toUpperCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,''),evidencias:String(r[kEvidencia]||'').trim()};
     }).filter(function(r){return r.mes;});
     if(!j4.error){      conectividadData={};conectividadHistorial={};
       (j4.rows||[]).forEach(function(r){
@@ -2738,13 +2739,13 @@ function renderPendientes(){
   if(pfPlat)rows=rows.filter(function(r){return r.plataforma===pfPlat;});
   if(pfBus)rows=rows.filter(function(r){return(r.monitorista||'').toLowerCase().includes(pfBus)||(r.tipo||'').toLowerCase().includes(pfBus)||(r.plataforma||'').toLowerCase().includes(pfBus);});
   var esMalo=function(val){var v=String(val||'').toUpperCase().trim();return!v||v===''||v==='-'||v==='NO'||v.indexOf('INCOMPLETA')!==-1||v.indexOf('INCOMPLETO')!==-1;};
-  var esMaloCorreos=function(val,rec){var raw=String(val||'').toUpperCase().trim();var n=(raw==='X'||raw===''||raw==='-')?0:(parseInt(raw)||0);return rec==='si'?(n<1):(n<7);};
+  var esMaloCorreos=function(val,rec,adj){if(adj==='NO APLICA')return false;var raw=String(val||'').toUpperCase().trim();var n=(raw==='X'||raw===''||raw==='-')?0:(parseInt(raw)||0);return rec==='si'?(n<1):(n<7);};
   var total=rows.length;
   var _pst=document.getElementById('ps-total');if(_pst)_pst.textContent=total;
   var sinWhats=rows.filter(function(r){return esMalo(r.whatsapp);}).length;
   var sinDrive=rows.filter(function(r){return esMalo(r.drive);}).length;
   var sinTicket=rows.filter(function(r){return esMalo(r.ticketZoho);}).length;
-  var sinCorreos=rows.filter(function(r){return esMaloCorreos(r.correos,r.recuperado);}).length;
+  var sinCorreos=rows.filter(function(r){return esMaloCorreos(r.correos,r.recuperado,r.adjuntosCorreo);}).length;
   var sinEvidencia=rows.filter(function(r){return esMalo(r.evidencias);}).length;
   var _psw=document.getElementById('ps-sin-whats');if(_psw)_psw.textContent=sinWhats;var _psd=document.getElementById('ps-sin-drive');if(_psd)_psd.textContent=sinDrive;
   var _pstk=document.getElementById('ps-sin-ticket');if(_pstk)_pstk.textContent=sinTicket;
@@ -2756,7 +2757,7 @@ function renderPendientes(){
   var _pcl=document.getElementById('pend-count-label');if(_pcl)_pcl.textContent=total+' registro'+(total!==1?'s':'')+' encontrado'+(total!==1?'s':'');
   if(!rows.length){document.getElementById('pend-tbody').innerHTML='<tr><td colspan="9" class="pend-empty">✅ No hay registros incompletos con los filtros seleccionados</td></tr>';return;}
   var chkSiNo=function(val){var v=String(val||'').toUpperCase().trim();if(!v||v==='-'||v==='NO'||v.indexOf('INCOMPLETA')!==-1||v.indexOf('INCOMPLETO')!==-1)return'<span class="check-no">✕</span>';return'<span class="check-yes">✔</span>';};
-  var chkCorreos=function(val,rec){var raw=String(val||'').toUpperCase().trim();var n=(raw==='X'||raw===''||raw==='-')?0:(parseInt(raw)||0);if(rec==='si')return n>=1?'<span class="num-badge" style="background:#dcfce7;color:#15803d">'+n+'</span>':'<span class="num-badge" style="background:#fee2e2;color:#dc2626">0</span>';return n>=7?'<span class="num-badge" style="background:#dcfce7;color:#15803d">'+n+'</span>':'<span class="num-badge" style="background:#fee2e2;color:#dc2626">'+n+'/7</span>';};
+  var chkCorreos=function(val,rec,adj){if(adj==='NO APLICA')return'<span class="num-badge" style="background:#f1f5f9;color:#64748b" title="Adjuntos al correo: No aplica">N/A</span>';var raw=String(val||'').toUpperCase().trim();var n=(raw==='X'||raw===''||raw==='-')?0:(parseInt(raw)||0);if(rec==='si')return n>=1?'<span class="num-badge" style="background:#dcfce7;color:#15803d">'+n+'</span>':'<span class="num-badge" style="background:#fee2e2;color:#dc2626">0</span>';return n>=7?'<span class="num-badge" style="background:#dcfce7;color:#15803d">'+n+'</span>':'<span class="num-badge" style="background:#fee2e2;color:#dc2626">'+n+'/7</span>';};
   var grupos={};
   rows.forEach(function(r){var key=r.monitorista||'Sin asignar';if(!grupos[key])grupos[key]=[];grupos[key].push(r);});
   var personasSorted=Object.keys(grupos).sort(function(a,b){return grupos[b].length-grupos[a].length;});
